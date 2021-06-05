@@ -1,0 +1,223 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: "AWS::Serverless-2016-10-31"
+Description: API Gateway Sample
+Parameters:
+  #APIGateway
+  APIGatewayStageName:
+    Type: String
+    AllowedValues:
+      - test
+      - prod
+
+Resources:
+  #-------------------------------------------------------
+  #   API Gateway
+  #-------------------------------------------------------
+  #RestApi
+  APIGatewayRestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: api_gateway
+
+  #Resource
+  APIGatewayResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref APIGatewayRestApi
+      ParentId: !GetAtt APIGatewayRestApi.RootResourceId
+      PathPart: target_lambda
+
+  #Method
+  APIGatewayPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      ApiKeyRequired: false
+      #
+      # Authorize with Cognito User Pool
+      AuthorizationType: COGNITO_USER_POOLS
+      AuthorizerId: !Ref APIGatewayAuthorizer
+      #
+      HttpMethod: POST
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TargetLambdaFunction.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+      ResourceId: !Ref APIGatewayResource
+      RestApiId: !Ref APIGatewayRestApi
+
+  # APIGatewayOptionsMethod:
+  #   Type: AWS::ApiGateway::Method
+  #   Properties:
+  #     ApiKeyRequired: false
+  #     HttpMethod: OPTIONS
+  #     Integration:
+  #       Type: MOCK
+  #       IntegrationHttpMethod: POST
+  #       IntegrationResponses:
+  #         - StatusCode: 200
+  #           ResponseParameters:
+  #             method.response.header.Access-Control-Allow-Methods: "'POST'"
+  #             method.response.header.Access-Control-Allow-Headers: "'Authorization,Content-Type,X-Amz-Date,Authorization,X-Requested-With,X-Requested-By,X-Api-Key'"
+  #             method.response.header.Access-Control-Allow-Origin: "'*'"
+  #       PassthroughBehavior: WHEN_NO_TEMPLATES
+  #       RequestTemplates:
+  #         application/json: "{ \"statusCode\" : 200 }"
+  #     MethodResponses:
+  #       - StatusCode: 200
+  #         ResponseParameters:
+  #           method.response.header.Access-Control-Allow-Methods: true
+  #           method.response.header.Access-Control-Allow-Headers: true
+  #           method.response.header.Access-Control-Allow-Origin: true
+  #     ResourceId: !Ref APIGatewayResource
+  #     RestApiId: !Ref APIGatewayRestApi
+
+  #Authorizer
+  APIGatewayAuthorizer:
+    Type: AWS::ApiGateway::Authorizer
+    Properties:
+      Name: Authorizer
+      RestApiId: !Ref APIGatewayRestApi
+      # Cognito User Pool
+      ProviderARNs:
+        - !Sub ${UserPool.Arn}
+      Type: COGNITO_USER_POOLS
+      IdentitySource: method.request.header.Authorization
+
+  #Deployment
+  APIGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - APIGatewayPostMethod
+      # - APIGatewayOptionsMethod
+    Properties:
+      RestApiId: !Ref APIGatewayRestApi
+      StageName: !Sub ${APIGatewayStageName}
+      StageDescription:
+        # CloudWatch Logs
+        DataTraceEnabled: true
+        LoggingLevel: ERROR #or INFO
+        # CloudWatch metrics
+        MetricsEnabled: true
+        #X-Ray
+        TracingEnabled: true
+
+  #API Gateway needs to be given the right to invoke AWS Lambda
+  APIGatewayLambdaInvokeRole:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref TargetLambdaFunction
+      Principal: apigateway.amazonaws.com
+
+  #-------------------------------------------------------
+  #   CloudWatch LogGroup
+  #-------------------------------------------------------
+  TargetLambdaFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${TargetLambdaFunction}
+
+  #-------------------------------------------------------
+  #   Cognito
+  #-------------------------------------------------------
+  # Cognito User Pool
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: UserPool
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      AliasAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+        - phone_number
+      EnabledMfas:
+        - SMS_MFA
+        - SOFTWARE_TOKEN_MFA
+      MfaConfiguration: OPTIONAL
+      Schema:
+        - AttributeDataType: String
+          Name: email
+          Required: True
+      SmsConfiguration:
+        ExternalId: String
+        SnsCallerArn: !Sub ${SnsRole.Arn}
+
+  #App clients
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      AccessTokenValidity: 60
+      ClientName: UserPool-client
+      GenerateSecret: false #Do not create Client Secret
+      ExplicitAuthFlows:
+        - ALLOW_CUSTOM_AUTH
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      IdTokenValidity: 60
+      PreventUserExistenceErrors: ENABLED
+      RefreshTokenValidity: 43200
+      TokenValidityUnits:
+        AccessToken: minutes
+        IdToken: minutes
+        RefreshToken: minutes
+      UserPoolId: !Ref UserPool
+
+  #-------------------------------------------------------
+  #   Lambda
+  #-------------------------------------------------------
+  #API Gateway Target Lambda Function
+  TargetLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Lambda/target_lambda
+      FunctionName: target_lambda
+      Handler: target_lambda.handler
+      MemorySize: 128
+      Role: !Sub ${LambdaRole.Arn}
+      Runtime: nodejs12.x
+      Timeout: 900
+      #X-Ray
+      Tracing: Active
+
+  # ------------------------------------------------------------#
+  # IAM
+  # ------------------------------------------------------------#
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSLambda_FullAccess
+      Path: /
+      RoleName: LambdaRole
+
+  SnsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - cognito-idp.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSNSFullAccess
+      Path: /
+      RoleName: SnsRole

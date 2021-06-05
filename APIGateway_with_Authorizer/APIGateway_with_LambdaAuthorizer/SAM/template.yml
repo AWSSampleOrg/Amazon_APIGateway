@@ -1,0 +1,117 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: "AWS::Serverless-2016-10-31"
+Description: API Gateway Sample
+Parameters:
+  #APIGateway
+  APIGatewayStageName:
+    Type: String
+    AllowedValues:
+      - test
+      - prod
+
+Resources:
+  #-------------------------------------------------------
+  #   API Gateway
+  #-------------------------------------------------------
+  #RestApi
+  APIGatewayRestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: api_gateway
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: swagger.yml
+      MethodSettings:
+        - DataTraceEnabled: true
+          LoggingLevel: ERROR
+          ResourcePath: '/*'
+          HttpMethod: '*'
+          MetricsEnabled: true
+      TracingEnabled: true
+      StageName: !Sub ${APIGatewayStageName}
+
+  #API Gateway needs to be given the right to invoke AWS Lambda
+  LambdaAuthorizerInvokeRole:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LambdaAuthorizer
+      Principal: apigateway.amazonaws.com
+
+  #API Gateway needs to be given the right to invoke AWS Lambda
+  TargetLambdaFunctionInvokeRole:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref TargetLambdaFunction
+      Principal: apigateway.amazonaws.com
+
+  #-------------------------------------------------------
+  #   CloudWatch LogGroup
+  #-------------------------------------------------------
+  LambdaAuthorizerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${LambdaAuthorizer}
+
+  TargetLambdaFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${TargetLambdaFunction}
+
+  #-------------------------------------------------------
+  #   Lambda
+  #-------------------------------------------------------
+  #LambdaAuthorizer
+  LambdaAuthorizer:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Lambda/Authorizer
+      FunctionName: Authorizer
+      Handler: Authorizer.handler
+      MemorySize: 128
+      Role: !Sub ${LambdaRole.Arn}
+      Runtime: nodejs12.x
+      Timeout: 900
+      #X-Ray
+      Tracing: Active
+      Environment:
+        Variables:
+          PASSWORD: l+/MraaOI1yT3F1l15fJMcEKGiG3iWn7nOTmUS4fWk0=
+          SALT: kr3dJJ1mPcIKisMOR4RO6w==
+
+  #API Gateway Target Lambda Function
+  TargetLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Lambda/target_lambda
+      FunctionName: target_lambda
+      Handler: target_lambda.handler
+      MemorySize: 128
+      Role: !Sub ${LambdaRole.Arn}
+      Runtime: nodejs12.x
+      Timeout: 900
+      #X-Ray
+      Tracing: Active
+
+  # ------------------------------------------------------------#
+  # IAM
+  # ------------------------------------------------------------#
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSLambda_FullAccess
+      Path: /
+      RoleName: LambdaRole

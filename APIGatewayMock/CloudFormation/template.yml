@@ -1,0 +1,106 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: "AWS::Serverless-2016-10-31"
+Description: API Gateway Mock
+Parameters:
+  #APIGateway
+  APIGatewayStageName:
+    Type: String
+    AllowedValues:
+      - test
+      - prod
+
+Resources:
+  #-------------------------------------------------------
+  #   API Gateway
+  #-------------------------------------------------------
+  #RestApi
+  APIGatewayRestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: api_gateway
+
+  #Resource
+  APIGatewayResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref APIGatewayRestApi
+      ParentId: !GetAtt APIGatewayRestApi.RootResourceId
+      PathPart: mock_test
+
+  #POST Method
+  APIGatewayPostMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: POST
+      Integration:
+        Type: MOCK
+        IntegrationHttpMethod: POST
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: |-
+                {
+                  "Method" : "POST",
+                  "name" : "Hello world",
+                  "age" : 100
+                }
+        PassthroughBehavior: WHEN_NO_TEMPLATES
+        RequestTemplates:
+          application/json: |-
+            {
+              "statusCode" : 200,
+              "message" : "Post test"
+            }
+      MethodResponses:
+        - StatusCode: 200
+      ResourceId: !Ref APIGatewayResource
+      RestApiId: !Ref APIGatewayRestApi
+
+  #Get Method
+  APIGatewayGetMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: MOCK
+        IntegrationHttpMethod: POST
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: |-
+                {
+                  "Method" : "GET",
+                  "name" : "Hello world",
+                  "age" : 100
+                }
+        PassthroughBehavior: WHEN_NO_TEMPLATES
+        RequestTemplates:
+          application/json: |-
+            {
+              "statusCode" : 200,
+              "message" : "Get test"
+            }
+      MethodResponses:
+        - StatusCode: 200
+      ResourceId: !Ref APIGatewayResource
+      RestApiId: !Ref APIGatewayRestApi
+
+  #Deployment
+  APIGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - APIGatewayGetMethod
+      - APIGatewayPostMethod
+    Properties:
+      RestApiId: !Ref APIGatewayRestApi
+      StageName: !Sub ${APIGatewayStageName}
+      StageDescription:
+        # CloudWatch Logs
+        DataTraceEnabled: true
+        LoggingLevel: ERROR #or INFO
+        # CloudWatch metrics
+        MetricsEnabled: true
+        #X-Ray
+        TracingEnabled: true

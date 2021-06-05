@@ -1,0 +1,18 @@
+{
+    "CryptoConfig": {
+        "PASSWORD": "l+/MraaOI1yT3F1l15fJMcEKGiG3iWn7nOTmUS4fWk0=",
+        "SALT": "kr3dJJ1mPcIKisMOR4RO6w=="
+    },
+    "region": "The AWS Region to deploy application",
+    "method": "POST or GET or something others",
+    "pathTemplate": "/target_lambda",
+    "RestApiStage": "test or prod",
+    "CognitoUserPassword": "Cognito User Password",
+    "CognitoUserName": "Cognito User Name",
+    "CognitoUserGroupName" : "User Group Name",
+
+    "CognitoUserGroupIamRoleArn": "Cognito User Group IAM Role ARN",
+    "CognitoAppClientId": "Cognito App Client ID",
+    "CognitoIdentityPoolId": "Cognito Identity PoolId",
+    "RestApiID": "Rest API ID",
+    "CognitoUserPoolId": "Cognito User PoolId"

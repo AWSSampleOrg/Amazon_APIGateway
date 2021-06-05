@@ -1,0 +1,122 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: "AWS::Serverless-2016-10-31"
+Description: API Gateway Sample
+Parameters:
+  #APIGateway
+  APIGatewayStageName:
+    Type: String
+    AllowedValues:
+      - test
+      - prod
+
+Resources:
+  #-------------------------------------------------------
+  #   API Gateway
+  #-------------------------------------------------------
+  #RestApi
+  APIGatewayRestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: api_gateway
+
+  #Resource
+  APIGatewayResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref APIGatewayRestApi
+      ParentId: !GetAtt APIGatewayRestApi.RootResourceId
+      PathPart: target_lambda
+
+  #Method
+  APIGatewayMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        # IntegrationResponses:
+        #   - StatusCode: 202
+        # PassthroughBehavior: WHEN_NO_TEMPLATES
+        # RequestParameters:
+        #   "integration.request.header.X-Amz-Invocation-Type": "'Event'"
+        # RequestTemplates:
+        #   "application/json": !Join
+        #     - ""
+        #     - - "#set($allParams = $input.params())\n{\n\"body-json\" : $input.json('$'),\n\"params\" : {\n#foreach($type in $allParams.keySet())\n #set($params = $allParams.get($type))\n\"$type\" : {\n #foreach($paramName in $params.keySet())\n \"$paramName\" : \"$util.escapeJavaScript($params.get($paramName))\"\n #if($foreach.hasNext),#end\n #end\n}\n "
+        #       - "#if($foreach.hasNext),#end\n#end\n},\n\"stage-variables\" : {\n#foreach($key in $stageVariables.keySet())\n\"$key\" : \"$util.escapeJavaScript($stageVariables.get($key))\"\n #if($foreach.hasNext),#end\n#end\n},\n"
+        #       - "\"context\" : {\n \"account-id\" : \"$context.identity.accountId\",\n \"api-id\" : \"$context.apiId\",\n \"api-key\" : \"$context.identity.apiKey\",\n \"authorizer-principal-id\" : \"$context.authorizer.principalId\",\n \"caller\" : \"$context.identity.caller\",\n \"cognito-authentication-provider\" : \"$context.identity.cognitoAuthenticationProvider\",\n \"cognito-authentication-type\" : \"$context.identity.cognitoAuthenticationType\",\n \"cognito-identity-id\" : \"$context.identity.cognitoIdentityId\",\n "
+        #       - "\"cognito-identity-pool-id\" : \"$context.identity.cognitoIdentityPoolId\",\n \"http-method\" : \"$context.httpMethod\",\n \"stage\" : \"$context.stage\",\n "
+        #       - "\"source-ip\" : \"$context.identity.sourceIp\",\n \"user\" : \"$context.identity.user\",\n \"user-agent\" : \"$context.identity.userAgent\",\n \"user-arn\" : \"$context.identity.userArn\",\n \"request-id\" : \"$context.requestId\",\n \"resource-id\" : \"$context.resourceId\",\n \"resource-path\" : \"$context.resourcePath\"\n }\n}"
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TargetLambdaFunction.Arn}/invocations
+      MethodResponses:
+        # - StatusCode: 202 #default response status code with async invocation
+        - StatusCode: 200
+      ResourceId: !Ref APIGatewayResource
+      RestApiId: !Ref APIGatewayRestApi
+
+  #Deployment
+  APIGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - APIGatewayMethod
+    Properties:
+      RestApiId: !Ref APIGatewayRestApi
+      StageName: !Sub ${APIGatewayStageName}
+      StageDescription:
+        # CloudWatch Logs
+        DataTraceEnabled: true
+        LoggingLevel: ERROR #or INFO
+        # CloudWatch metrics
+        MetricsEnabled: true
+        #X-Ray
+        TracingEnabled: true
+
+  #API Gateway needs to be given the right to invoke AWS Lambda
+  APIGatewayLambdaInvokeRole:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref TargetLambdaFunction
+      Principal: apigateway.amazonaws.com
+
+  #-------------------------------------------------------
+  #   Lambda
+  #-------------------------------------------------------
+  #API Gateway Target Lambda Function
+  TargetLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Lambda/target_lambda
+      FunctionName: target_lambda
+      Handler: target_lambda.lambda_handler
+      MemorySize: 128
+      Role: !Sub ${LambdaRole.Arn}
+      Runtime: python3.8
+      Timeout: 900
+      #X-Ray
+      Tracing: Active
+      Environment:
+        Variables:
+          Key: Value
+
+  # ------------------------------------------------------------#
+  # IAM
+  # ------------------------------------------------------------#
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSLambda_FullAccess
+      Path: /
+      RoleName: LambdaRole

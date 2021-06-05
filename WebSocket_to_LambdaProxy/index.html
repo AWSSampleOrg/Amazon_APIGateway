@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div>
+        name : <input type="text" id="user_name"> password : <input type="password" id="password">
+    </div>
+    <div>
+        <button id="sendMessage">submit</button>
+    </div>
+    <div>
+        <button id="finish">close connection</button>
+    </div>
+</body>
+<script>
+    const ws = new WebSocket("wss://");
+
+    //start
+    ws.onopen = function(e) { };
+
+    //error
+    ws.onerror = function(error) { };
+
+    //sendMessage
+    document.querySelector("#sendMessage").addEventListener("click",function(){
+        const user_name = document.querySelector("#user_name").value;
+        const password = document.querySelector("#password").value;
+        const message = { "action": "sendMessage", "data": {"user_name" : user_name,"password" : password} };
+        ws.send(JSON.stringify(message));
+    });
+
+
+    //got message
+    ws.onmessage = function(e) {
+        console.log(e.data);
+    };
+
+    //close connection
+    document.querySelector("#finish").addEventListener("click",function(){
+        ws.close();
+    });
+
+
+</script>
+</html>

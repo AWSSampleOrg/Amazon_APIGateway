@@ -1,0 +1,51 @@
+openapi: 3.0.1
+info:
+  title: api_gateway
+  version: "2020-08-29"
+paths:
+  /target_sqs:
+    get:
+      parameters:
+      - name: id
+        in: query
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: "200 response"
+          content: {}
+      x-amazon-apigateway-integration:
+        credentials:
+          Fn::Sub: ${APIGatewayRole.Arn}
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:sqs:path/${AWS::AccountId}/${SQS.QueueName}
+        responses:
+          default:
+            statusCode: 200
+        requestParameters:
+          integration.request.querystring.MessageBody: method.request.querystring.id
+          integration.request.querystring.Action: "'SendMessage'"
+        passthroughBehavior: when_no_match
+        httpMethod: POST
+        type: aws
+    post:
+      responses:
+        200:
+          description: "200 response"
+          content: {}
+      x-amazon-apigateway-integration:
+        credentials:
+          Fn::Sub: ${APIGatewayRole.Arn}
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:sqs:path/${AWS::AccountId}/${SQS.QueueName}
+        responses:
+          default:
+            statusCode: 200
+        requestParameters:
+          integration.request.querystring.MessageBody: method.request.body.id
+          integration.request.querystring.Action: "'SendMessage'"
+        passthroughBehavior: when_no_match
+        httpMethod: POST
+        type: aws
+mponents: {}

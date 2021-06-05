@@ -1,0 +1,39 @@
+openapi: 3.0.1
+info:
+  title: api_gateway
+  version: "2020-08-29"
+paths:
+  /target_alb:
+    get:
+      responses:
+        200:
+          description: "200 response"
+          content: {}
+      x-amazon-apigateway-integration:
+        type: http
+        credentials:
+          Fn::Sub: ${APIGatewayRole.Arn}
+        uri:
+          Fn::Sub: http://${ALB.DNSName}
+        responses:
+          default:
+            statusCode: 200
+        passthroughBehavior: when_no_match
+        httpMethod: GET
+    post:
+      responses:
+        200:
+          description: "200 response"
+          content: {}
+      x-amazon-apigateway-integration:
+        type: http
+        credentials:
+          Fn::Sub: ${APIGatewayRole.Arn}
+        uri:
+          Fn::Sub: http://${ALB.DNSName}
+        responses:
+          default:
+            statusCode: 200
+        passthroughBehavior: when_no_match
+        httpMethod: POST
+components: {}

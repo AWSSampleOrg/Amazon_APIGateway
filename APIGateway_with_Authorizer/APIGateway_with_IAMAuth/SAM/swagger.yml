@@ -1,0 +1,26 @@
+openapi: 3.0.1
+info:
+  title: api_gateway
+  version: "2020-08-30"
+paths:
+  /target_lambda:
+    post:
+      responses:
+        200:
+          description: 200 response
+          content: {}
+      security:
+        - sigv4: []
+      x-amazon-apigateway-integration:
+        type: aws_proxy
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TargetLambdaFunction.Arn}/invocations
+        passthroughBehavior: when_no_match
+        httpMethod: POST
+components:
+  securitySchemes:
+    sigv4:
+      type: apiKey
+      name: Authorization
+      in: header
+      x-amazon-apigateway-authtype: awsSigv4

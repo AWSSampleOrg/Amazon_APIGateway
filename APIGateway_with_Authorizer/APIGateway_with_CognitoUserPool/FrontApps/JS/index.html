@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UserPool</title>
+    <!-- AWS SDK for JavaScript -->
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.799.0.min.js"></script>
+    <!-- library -->
+    <script src="./src/jsbn.js"></script>
+    <script src="./src/jsbn2.js"></script>
+    <script src="./src/sjcl.js"></script>
+    <script src="./src/aws-sdk.min.js"></script>
+    <script src="./src/aws-cognito-sdk.js"></script>
+    <script src="./src/aws-cognito-sdk.min.js"></script>
+    <script src="./src/amazon-cognito-identity.min.js"></script>
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <!-- Source -->
+    <script type="module" src="./signIn.js" defer></script>
+    <script type="module" src="./signUp.js" defer></script>
+
+</head>
+<body>
+    <div class="container">
+        <h1 class="navbar-brand">Sign Up & Sign In Cognito, then you can invoke AWS lambda through API Gateway</h1>
+        <form class="form-inline">
+            <button id="signIn" type="button" class="btn btn-outline-primary">Sign In</button>
+            <button id="signUp" type="button" class="btn btn-outline-success">Sign Up</button>
+        </form>
+
+        <form class="main">
+            <!-- User Name -->
+            <div class="form-group row">
+                <label for="userName" class="col-sm-2 col-form-label">User Name</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" id="userName" autocomplete="off">
+                </div>
+            </div>
+            <!-- Password -->
+            <div class="form-group row">
+                <label for="password" class="col-sm-2 col-form-label">Password</label>
+                <div class="col-sm-3">
+                    <input type="password" class="form-control" id="password" autocomplete="new-password">
+                </div>
+            </div>
+            <!-- Email -->
+            <div class="form-group row emailGroup">
+                <label for="email" class="col-sm-2 col-form-label">Email</label>
+                <div class="col-sm-3">
+                    <input type="email" class="form-control" id="email" autocomplete="off">
+                </div>
+            </div>
+            <!-- Confirmation Code -->
+            <div class="form-group row confirmationCodeGroup">
+                <label for="confirmationCode" class="col-sm-2 col-form-label">Confirmation Code</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" id="confirmationCode" autocomplete="off">
+                </div>
+            </div>
+            <!-- button -->
+            <button id="submit" type="button" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
+
+
+    <style>
+        .main{
+            visibility: hidden;
+        }
+    </style>
+
+</body>
+</html>

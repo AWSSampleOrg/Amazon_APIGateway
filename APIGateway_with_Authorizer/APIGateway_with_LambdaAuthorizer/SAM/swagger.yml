@@ -1,0 +1,31 @@
+openapi: 3.0.1
+info:
+  title: api_gateway
+  version: "2020-08-30"
+paths:
+  /target_lambda:
+    post:
+      responses:
+        200:
+          description: 200 response
+          content: {}
+      security:
+        - Authorizer: []
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TargetLambdaFunction.Arn}/invocations
+        passthroughBehavior: when_no_match
+        httpMethod: POST
+        type: aws_proxy
+components:
+  securitySchemes:
+    Authorizer:
+      type: apiKey
+      name: Authorization
+      in: header
+      x-amazon-apigateway-authtype: custom
+      x-amazon-apigateway-authorizer:
+        authorizerUri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaAuthorizer.Arn}/invocations
+        authorizerResultTtlInSeconds: 300
+       type: token
