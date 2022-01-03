@@ -26,19 +26,63 @@ Resources:
       MethodSettings:
         - DataTraceEnabled: true
           LoggingLevel: ERROR
-          ResourcePath: '/*'
-          HttpMethod: '*'
+          ResourcePath: "/*"
+          HttpMethod: "*"
           MetricsEnabled: true
       TracingEnabled: true
       StageName: !Sub ${APIGatewayStageName}
 
   #API Gateway needs to be given the right to invoke AWS Lambda
-  APIGatewayLambdaInvokeRole:
+  APIGatewayLambdaInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref TargetLambdaFunction
       Principal: apigateway.amazonaws.com
+
+  #-------------------------------------------------------
+  #   CloudWatch Alarm
+  #-------------------------------------------------------
+  LambdaDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref SNSTopic
+      AlarmDescription: !Sub This is the Duration alarm for ${TargetLambdaFunction}
+      AlarmName: !Sub ${TargetLambdaFunction}Duration
+      # CloudWatch Alarm would alert when it happens "EvaluationPeriods" times that the state of "ComparisonOperator" happens "Threshold" times in "Period" seconds.
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref TargetLambdaFunction
+      EvaluationPeriods: 1
+      MetricName: Duration
+      Namespace: AWS/Lambda
+      Period: 600
+      Statistic: Average
+      Threshold: 5
+
+  #-------------------------------------------------------
+  #   SNS
+  #-------------------------------------------------------
+  SNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: SNSTopic
+
+  #-------------------------------------------------------
+  #   CloudWatch LogGroup
+  #-------------------------------------------------------
+  APIGatewayLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub API-Gateway-Execution-Logs_${APIGatewayRestApi}/${APIGatewayStageName}
+
+  TargetLambdaFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${TargetLambdaFunction}
 
   #-------------------------------------------------------
   #   Lambda
@@ -49,10 +93,10 @@ Resources:
     Properties:
       CodeUri: Lambda/target_lambda
       FunctionName: target_lambda
-      Handler: target_lambda.lambda_handler
+      Handler: lambda_handler.lambda_handler
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}
-      Runtime: python3.8
+      Runtime: python3.9
       Timeout: 900
       #X-Ray
       Tracing: Active
@@ -77,5 +121,6 @@ Resources:
               - sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AWSLambda_FullAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Path: /
       RoleName: LambdaRole
