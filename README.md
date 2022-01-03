@@ -1,47 +1,47 @@
-# AWS環境にカスタムドメインを設定する例
+# Setting up custom domain names for REST APIs
 
-## 1. ドメインを取得
-  - 参考)Freenomというサイトで無料で取得できる。Route53でも取得できるが有料。ただし、Freenomで取得した場合、有効期限がある。
+## 1. Get your domain
 
-## 2. Route53にドメインを登録
-  - 2-1. Host Zoneを作成。1. で取得したドメインを指定。
-  - 2-2. NSレコードとSOAレコードが自動作成されていることを確認する。
+## 2. Register your domain to Route53
+  - 2-1. Create Host Zone. specify your domain that you got in the section 1.
+  - 2-2. Check it out NS and SOA record is created automatically by Route 53.
 
-## 3. 2.で登録されたNSレコードの値を、「Domain Server」として登録
-  - ex) 1.でFreenomを使った場合、FreenomでNameServerにNSレコードの値を1つずつ入力（普通4つある）。
+## 3. Register "NS" record you got in the section 2. as the "Domain Server"
+  - ex) register NS record to the NameServer in which you got your domain. and there are usually four NS record.
 
-## 4. ACM(AWS Certificate Manager)でSSL/TLS証明書を発行
-  - 4-1. 以下5で作成するカスタムドメインのエンドポイントを「Edge-optimized API」とする場合はVirginia北部で、
-    Regional API」とする場合は、該当するRegionで発行する。
-  - 4-2. 証明書を発行すると、「Route53でのレコードの作成」ボタンが表示されるので、作成する。
-  - 4-3. 2. で作成したRoute53のHost ZoneにCNAMEレコードが作成されている事を確認する。
-  - 4-4. 発行済みになるまで待つ。
+## 4. Got the SSL/TLS certificate in ACM(AWS Certificate Manager).
+  - 4-1. If you set your endpoint for your custom domain as `Edge-optimized API` in the "section 5", you must request certificate in the `US East (N. Virginia)`, or if you set it as `Regional API`, you can request in `any regions`.
+  - 4-2. After you request certificate, you create Route53 record.
+  - 4-3. Check it out that CNAME record is created in the Host zone you created in the section 2.
+  - 4-4. wait for the certificate request is completed
 
-## 5. APIGatewayでカスタムドメインを作成
+## 5. Create Custom domain in the Amazon APIGateway
 ```
-プロトコル : REST
-ドメイン名 : 1. で取得したドメイン名
-セキュリティーポリシー : TLSv1.2
-エンドポイント : 4. で発行した証明書に合わせて「Edge-optimized API」、「Regional API」を選択
-ACM証明書 : 4. で取得した証明書
+protocol : REST
+domain name : 1. your domain
+Security policy : TLSv1.2
+endpoint : select `Edge-optimized API` or `Regional API`
+ACM certificate : certificate you got in the section 4
 
-保存してベースマッピングを追加
-送信先 : APIGatewayのAPI名
-ステージ : ステージ名
-パス : 今回は必要なし
+save on and add base mapping
+request to : your APIGateway API name
+stage : your APIGateway stage name
+path : don't need this time
 ```
 
-## 6. Route53でAレコード作成
-  - 6-1. 2. で作成したHost ZoneでAレコードを選択。
-  - 6-2. エイリアスを選択し、5. でカスタムドメインに自動作成された「ターゲット名」を選択し、エイリアス先に追加。
-  - 6-3. 2. で作成したHost ZoneにAレコード（エイリアス）が追加されていることを確認する。
+## 6. Create A record in the Route53
+  - 6-1. select A in the Host zone you created in the section 2
+  - 6-2. Add `target name` which is created in the custom domain in the section 5 by AWS managed service to `alias`.
+  - 6-3. Check it out that A record `alias` is added to the Host Zone you created in the section 2.
 
-## 7. 動作確認
+## 7. Confirm it works
+
 ```
-~$ sslscan 1.で取得したドメイン/パス
+DOMAIN="your domain which you got in the section 1"
+PATH="/example"
+
+~$ sslscan "${DOMAIN}${PATH}"
 
     Supported Server Cipher
-    Accepted TLSv1.2 128 bits 暗号化方法......
-
-    ここにTLSv1.0が書かれていないことを確認する。
+    Accepted TLSv1.2 128 bits ......
 ```
