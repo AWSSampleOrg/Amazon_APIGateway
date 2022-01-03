@@ -25,11 +25,19 @@ Resources:
       MethodSettings:
         - DataTraceEnabled: true
           LoggingLevel: ERROR
-          ResourcePath: '/*'
-          HttpMethod: '*'
+          ResourcePath: "/*"
+          HttpMethod: "*"
           MetricsEnabled: true
       TracingEnabled: true
       StageName: !Sub ${APIGatewayStageName}
+
+  #-------------------------------------------------------
+  #   CloudWatch LogGroup
+  #-------------------------------------------------------
+  APIGatewayLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub API-Gateway-Execution-Logs_${APIGatewayRestApi}/${APIGatewayStageName}
 
   #-------------------------------------------------------
   # SQS

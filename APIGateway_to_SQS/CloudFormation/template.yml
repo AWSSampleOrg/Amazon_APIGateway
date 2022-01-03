@@ -98,6 +98,14 @@ Resources:
         TracingEnabled: true
 
   #-------------------------------------------------------
+  #   CloudWatch LogGroup
+  #-------------------------------------------------------
+  APIGatewayLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub API-Gateway-Execution-Logs_${APIGatewayRestApi}/${APIGatewayStageName}
+
+  #-------------------------------------------------------
   # SQS
   #-------------------------------------------------------
   SQS:
