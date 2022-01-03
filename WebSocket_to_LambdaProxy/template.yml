@@ -120,7 +120,7 @@ Resources:
       ApiId: !Ref WebSocketApi
 
   #API Gateway needs to be given the right to invoke AWS Lambda
-  ConnectFunctionInvokeRole:
+  ConnectFunctionInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
@@ -128,7 +128,7 @@ Resources:
       Principal: apigateway.amazonaws.com
 
   #API Gateway needs to be given the right to invoke AWS Lambda
-  SendMessageFunctionInvokeRole:
+  SendMessageFunctionInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
@@ -136,7 +136,7 @@ Resources:
       Principal: apigateway.amazonaws.com
 
   #API Gateway needs to be given the right to invoke AWS Lambda
-  DefaultFunctionInvokeRole:
+  DefaultFunctionInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
@@ -144,7 +144,7 @@ Resources:
       Principal: apigateway.amazonaws.com
 
   #API Gateway needs to be given the right to invoke AWS Lambda
-  DisConnectFunctionInvokeRole:
+  DisConnectFunctionInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
@@ -152,8 +152,101 @@ Resources:
       Principal: apigateway.amazonaws.com
 
   #-------------------------------------------------------
+  #   CloudWatch Alarm
+  #-------------------------------------------------------
+  ConnectFunctionDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref SNSTopic
+      AlarmDescription: !Sub ${ConnectFunction}LambdaFunctionDurationAlarm
+      AlarmName: !Sub ${ConnectFunction}LambdaFunctionDurationAlarm
+      # CloudWatch Alarm would alert when it happens "EvaluationPeriods" times that the state of "ComparisonOperator" happens "Threshold" times in "Period" seconds.
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ConnectFunction
+      EvaluationPeriods: 1
+      MetricName: Duration
+      Namespace: AWS/Lambda
+      Period: 600
+      Statistic: Average
+      Threshold: 5
+
+  SendMessageFunctionDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref SNSTopic
+      AlarmDescription: !Sub ${SendMessageFunction}LambdaFunctionDurationAlarm
+      AlarmName: !Sub ${SendMessageFunction}LambdaFunctionDurationAlarm
+      # CloudWatch Alarm would alert when it happens "EvaluationPeriods" times that the state of "ComparisonOperator" happens "Threshold" times in "Period" seconds.
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref SendMessageFunction
+      EvaluationPeriods: 1
+      MetricName: Duration
+      Namespace: AWS/Lambda
+      Period: 600
+      Statistic: Average
+      Threshold: 5
+  DefaultFunctionDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref SNSTopic
+      AlarmDescription: !Sub ${DefaultFunction}LambdaFunctionDurationAlarm
+      AlarmName: !Sub ${DefaultFunction}LambdaFunctionDurationAlarm
+      # CloudWatch Alarm would alert when it happens "EvaluationPeriods" times that the state of "ComparisonOperator" happens "Threshold" times in "Period" seconds.
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref DefaultFunction
+      EvaluationPeriods: 1
+      MetricName: Duration
+      Namespace: AWS/Lambda
+      Period: 600
+      Statistic: Average
+      Threshold: 5
+  DisConnectFunctionDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Ref SNSTopic
+      AlarmDescription: !Sub ${DisConnectFunction}LambdaFunctionDurationAlarm
+      AlarmName: !Sub ${DisConnectFunction}LambdaFunctionDurationAlarm
+      # CloudWatch Alarm would alert when it happens "EvaluationPeriods" times that the state of "ComparisonOperator" happens "Threshold" times in "Period" seconds.
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref DisConnectFunction
+      EvaluationPeriods: 1
+      MetricName: Duration
+      Namespace: AWS/Lambda
+      Period: 600
+      Statistic: Average
+      Threshold: 5
+  #-------------------------------------------------------
+  #   SNS
+  #-------------------------------------------------------
+  SNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: SNSTopic
+
+  #-------------------------------------------------------
   #   CloudWatch LogGroup
   #-------------------------------------------------------
+  APIGatewayLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub API-Gateway-Execution-Logs_${WebSocketApi}/${APIGatewayStageName}
+
   ConnectFunctionLogLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -183,10 +276,10 @@ Resources:
     Properties:
       CodeUri: Lambda/connect
       FunctionName: connect
-      Handler: connect.lambda_handler
+      Handler: lambda_handler.lambda_handler
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}
-      Runtime: python3.8
+      Runtime: python3.9
       Timeout: 900
       #X-Ray
       Tracing: Active
@@ -199,10 +292,10 @@ Resources:
     Properties:
       CodeUri: Lambda/send_message
       FunctionName: send_message
-      Handler: send_message.lambda_handler
+      Handler: lambda_handler.lambda_handler
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}
-      Runtime: python3.8
+      Runtime: python3.9
       Timeout: 900
       #X-Ray
       Tracing: Active
@@ -215,10 +308,10 @@ Resources:
     Properties:
       CodeUri: Lambda/default
       FunctionName: default
-      Handler: default.lambda_handler
+      Handler: lambda_handler.lambda_handler
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}
-      Runtime: python3.8
+      Runtime: python3.9
       Timeout: 900
       #X-Ray
       Tracing: Active
@@ -231,10 +324,10 @@ Resources:
     Properties:
       CodeUri: Lambda/dis_connect
       FunctionName: dis_connect
-      Handler: dis_connect.lambda_handler
+      Handler: lambda_handler.lambda_handler
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}
-      Runtime: python3.8
+      Runtime: python3.9
       Timeout: 900
       #X-Ray
       Tracing: Active
@@ -259,5 +352,6 @@ Resources:
               - sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AWSLambda_FullAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Path: /
       RoleName: LambdaRole
