@@ -203,7 +203,7 @@ Resources:
       Handler: lambda_handler.handler
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}
-      Runtime: nodejs12.x
+      Runtime: python3.9
       Timeout: 900
       #X-Ray
       Tracing: Active
