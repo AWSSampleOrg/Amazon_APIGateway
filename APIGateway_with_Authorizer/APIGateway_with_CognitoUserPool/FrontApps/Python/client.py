@@ -13,7 +13,7 @@ SETTING = {
     },
     "region": "The AWS Region to deploy application",
     "method": "POST or GET or something others",
-    "pathTemplate": "/target_lambda",
+    "pathTemplate": "/lambda_handler",
     "RestApiStage": "test or prod",
     "CognitoUserPassword": "Cognito User Password",
     "CognitoUserName": "Cognito User Name",

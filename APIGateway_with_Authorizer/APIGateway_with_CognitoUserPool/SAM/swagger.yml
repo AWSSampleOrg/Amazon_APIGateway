@@ -3,7 +3,7 @@ info:
   title: api_gateway
   version: "2020-08-30"
 paths:
-  /target_lambda:
+  /lambda_handler:
     post:
       responses:
         200:

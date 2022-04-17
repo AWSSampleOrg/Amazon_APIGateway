@@ -104,9 +104,9 @@ Resources:
   TargetLambdaFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: Lambda/target_lambda
-      FunctionName: target_lambda
-      Handler: target_lambda.handler
+      CodeUri: Lambda/lambda_handler
+      FunctionName: lambda_handler
+      Handler: lambda_handler.handler
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}
       Runtime: nodejs12.x
