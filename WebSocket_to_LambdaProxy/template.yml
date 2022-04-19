@@ -13,6 +13,12 @@ Resources:
   #-------------------------------------------------------
   #   WebSocket on API Gateway
   #-------------------------------------------------------
+  # Account
+  APIGatewayAccount:
+    Type: AWS::ApiGateway::Account
+    Properties:
+      CloudWatchRoleArn: !Sub ${APIGatewayRole.Arn}
+
   # WebSocket
   WebSocketApi:
     Type: AWS::ApiGatewayV2::Api
@@ -242,10 +248,15 @@ Resources:
   #-------------------------------------------------------
   #   CloudWatch LogGroup
   #-------------------------------------------------------
-  APIGatewayLogGroup:
+  APIGatewayExecutionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub API-Gateway-Execution-Logs_${WebSocketApi}/${APIGatewayStageName}
+      LogGroupName: !Sub API-Gateway-Execution-Logs_${APIGatewayRestApi}/${APIGatewayStageName}
+
+  APIGatewayAccessLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub API-Gateway-Access-Logs_${APIGatewayRestApi}/${APIGatewayStageName}
 
   ConnectFunctionLogLogGroup:
     Type: AWS::Logs::LogGroup
@@ -355,3 +366,20 @@ Resources:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Path: /
       RoleName: LambdaRole
+
+  APIGatewayRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
+      Path: /
+      RoleName: APIGatewayRole

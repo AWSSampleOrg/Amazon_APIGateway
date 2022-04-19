@@ -12,6 +12,12 @@ Resources:
   #-------------------------------------------------------
   #   API Gateway
   #-------------------------------------------------------
+  # Account
+  APIGatewayAccount:
+    Type: AWS::ApiGateway::Account
+    Properties:
+      CloudWatchRoleArn: !Sub ${APIGatewayRole.Arn}
+
   #RestApi
   APIGatewayRestApi:
     Type: AWS::ApiGateway::RestApi
@@ -100,10 +106,15 @@ Resources:
   #-------------------------------------------------------
   #   CloudWatch LogGroup
   #-------------------------------------------------------
-  APIGatewayLogGroup:
+  APIGatewayExecutionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub API-Gateway-Execution-Logs_${APIGatewayRestApi}/${APIGatewayStageName}
+
+  APIGatewayAccessLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub API-Gateway-Access-Logs_${APIGatewayRestApi}/${APIGatewayStageName}
 
   #-------------------------------------------------------
   # SQS
@@ -131,9 +142,11 @@ Resources:
             Principal:
               Service:
                 - lambda.amazonaws.com
+                - apigateway.amazonaws.com
             Action:
               - sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AmazonSQSFullAccess
+        - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
       Path: /
       RoleName: APIGatewayRole
