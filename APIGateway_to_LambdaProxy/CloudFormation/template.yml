@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: 2010-09-09
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: "AWS::Serverless-2016-10-31"
 Description: API Gateway Sample
 Parameters:
@@ -13,19 +13,16 @@ Resources:
   #-------------------------------------------------------
   #   API Gateway
   #-------------------------------------------------------
-  # Account
   APIGatewayAccount:
     Type: AWS::ApiGateway::Account
     Properties:
       CloudWatchRoleArn: !Sub ${APIGatewayRole.Arn}
 
-  #RestApi
   APIGatewayRestApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
       Name: api_gateway
 
-  #Resource
   APIGatewayResource:
     Type: AWS::ApiGateway::Resource
     Properties:
@@ -62,7 +59,6 @@ Resources:
       ResourceId: !Ref APIGatewayResource
       RestApiId: !Ref APIGatewayRestApi
 
-  #Deployment
   APIGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
@@ -73,13 +69,11 @@ Resources:
       StageDescription:
         # CloudWatch Logs
         DataTraceEnabled: true
-        LoggingLevel: ERROR #or INFO
+        LoggingLevel: ERROR
         # CloudWatch metrics
         MetricsEnabled: true
-        #X-Ray
         TracingEnabled: true
 
-  #API Gateway needs to be given the right to invoke AWS Lambda
   APIGatewayLambdaInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -139,7 +133,6 @@ Resources:
   #-------------------------------------------------------
   #   Lambda
   #-------------------------------------------------------
-  #API Gateway Target Lambda Function
   TargetLambdaFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -150,11 +143,10 @@ Resources:
       Role: !Sub ${LambdaRole.Arn}
       Runtime: python3.9
       Timeout: 900
-      #X-Ray
       Tracing: Active
       Environment:
         Variables:
-          Key: Value
+          LOG_LEVEL: DEBUG
 
   # ------------------------------------------------------------#
   # IAM

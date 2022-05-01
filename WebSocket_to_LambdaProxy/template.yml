@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: 2010-09-09
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: "AWS::Serverless-2016-10-31"
 Description: API Gateway Sample
 Parameters:
@@ -13,7 +13,6 @@ Resources:
   #-------------------------------------------------------
   #   WebSocket on API Gateway
   #-------------------------------------------------------
-  # Account
   APIGatewayAccount:
     Type: AWS::ApiGateway::Account
     Properties:
@@ -107,7 +106,6 @@ Resources:
       IntegrationType: AWS_PROXY
       IntegrationUri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${DefaultFunction.Arn}/invocations
 
-  #Deployment
   Deployment:
     Type: AWS::ApiGatewayV2::Deployment
     DependsOn:
@@ -125,7 +123,6 @@ Resources:
       DeploymentId: !Ref Deployment
       ApiId: !Ref WebSocketApi
 
-  #API Gateway needs to be given the right to invoke AWS Lambda
   ConnectFunctionInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -133,7 +130,6 @@ Resources:
       FunctionName: !Ref ConnectFunction
       Principal: apigateway.amazonaws.com
 
-  #API Gateway needs to be given the right to invoke AWS Lambda
   SendMessageFunctionInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -141,7 +137,6 @@ Resources:
       FunctionName: !Ref SendMessageFunction
       Principal: apigateway.amazonaws.com
 
-  #API Gateway needs to be given the right to invoke AWS Lambda
   DefaultFunctionInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -149,7 +144,6 @@ Resources:
       FunctionName: !Ref DefaultFunction
       Principal: apigateway.amazonaws.com
 
-  #API Gateway needs to be given the right to invoke AWS Lambda
   DisConnectFunctionInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -281,7 +275,6 @@ Resources:
   #-------------------------------------------------------
   #   Lambda
   #-------------------------------------------------------
-  #API Gateway Target Lambda Function
   ConnectFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -292,11 +285,10 @@ Resources:
       Role: !Sub ${LambdaRole.Arn}
       Runtime: python3.9
       Timeout: 900
-      #X-Ray
       Tracing: Active
       Environment:
         Variables:
-          Key: Value
+          LOG_LEVEL: DEBUG
 
   SendMessageFunction:
     Type: AWS::Serverless::Function
@@ -308,11 +300,10 @@ Resources:
       Role: !Sub ${LambdaRole.Arn}
       Runtime: python3.9
       Timeout: 900
-      #X-Ray
       Tracing: Active
       Environment:
         Variables:
-          Key: Value
+          LOG_LEVEL: DEBUG
 
   DefaultFunction:
     Type: AWS::Serverless::Function
@@ -324,11 +315,10 @@ Resources:
       Role: !Sub ${LambdaRole.Arn}
       Runtime: python3.9
       Timeout: 900
-      #X-Ray
       Tracing: Active
       Environment:
         Variables:
-          Key: Value
+          LOG_LEVEL: DEBUG
 
   DisConnectFunction:
     Type: AWS::Serverless::Function
@@ -340,11 +330,10 @@ Resources:
       Role: !Sub ${LambdaRole.Arn}
       Runtime: python3.9
       Timeout: 900
-      #X-Ray
       Tracing: Active
       Environment:
         Variables:
-          Key: Value
+          LOG_LEVEL: DEBUG
 
   # ------------------------------------------------------------#
   # IAM

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 S3_BUCKET="your-bucket-name"
-CFN_STACK_NAME="APIGatewayMock"
+STACK_NAME="APIGatewayMock"
 
-SOURCE_DIR=$(cd $(dirname ${BASH_SOURCE:-0}) && pwd)
+SOURCE_DIR=$(cd $(dirname ${BASH_SOURCE:-$0}) && pwd)
 cd ${SOURCE_DIR}
 
 # package
@@ -14,7 +14,7 @@ aws cloudformation package \
 # deploy
 aws cloudformation deploy \
     --template-file packaged_template.yml \
-    --stack-name ${CFN_STACK_NAME} \
+    --stack-name ${STACK_NAME} \
     --parameter-overrides \
         APIGatewayStageName=test \
     --capabilities CAPABILITY_NAMED_IAM

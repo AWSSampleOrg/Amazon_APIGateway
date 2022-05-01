@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: 2010-09-09
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: "AWS::Serverless-2016-10-31"
 Description: API Gateway Sample
 Parameters:
@@ -12,13 +12,11 @@ Resources:
   #-------------------------------------------------------
   #   API Gateway
   #-------------------------------------------------------
-  # Account
   APIGatewayAccount:
     Type: AWS::ApiGateway::Account
     Properties:
       CloudWatchRoleArn: !Sub ${APIGatewayRole.Arn}
 
-  #RestApi
   APIGatewayRestApi:
     Type: AWS::Serverless::Api
     Properties:

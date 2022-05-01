@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: 2010-09-09
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: "AWS::Serverless-2016-10-31"
 Description: API Gateway Sample
 Parameters:
@@ -13,20 +13,20 @@ Parameters:
     Type: String
     Default: ""
 
-  #NetWork COnfigration Parameter
-  VPCCIDR:
+  #NetWork Configuration Parameter
+  VpcCidr:
     Type: String
     Default: "192.168.0.0/16"
-  PublicSubnetACIDR:
+  PublicSubnetACidr:
     Type: String
     Default: "192.168.0.0/24"
-  PublicSubnetCCIDR:
+  PublicSubnetCCidr:
     Type: String
     Default: "192.168.64.0/24"
-  PrivateSubnetACIDR:
+  PrivateSubnetACidr:
     Type: String
     Default: "192.168.128.0/24"
-  PrivateSubnetCCIDR:
+  PrivateSubnetCCidr:
     Type: String
     Default: "192.168.192.0/24"
 
@@ -34,19 +34,16 @@ Resources:
   #-------------------------------------------------------
   #   API Gateway
   #-------------------------------------------------------
-  # Account
   APIGatewayAccount:
     Type: AWS::ApiGateway::Account
     Properties:
       CloudWatchRoleArn: !Sub ${APIGatewayRole.Arn}
 
-  #RestApi
   APIGatewayRestApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
       Name: api_gateway
 
-  #Resource
   APIGatewayResource:
     Type: AWS::ApiGateway::Resource
     Properties:
@@ -92,7 +89,6 @@ Resources:
       ResourceId: !Ref APIGatewayResource
       RestApiId: !Ref APIGatewayRestApi
 
-  #Deployment
   APIGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
@@ -104,10 +100,9 @@ Resources:
       StageDescription:
         # CloudWatch Logs
         DataTraceEnabled: true
-        LoggingLevel: ERROR #or INFO
+        LoggingLevel: ERROR
         # CloudWatch metrics
         MetricsEnabled: true
-        #X-Ray
         TracingEnabled: true
 
   # ------------------------------------------------------------#
@@ -116,7 +111,7 @@ Resources:
   VPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: !Ref VPCCIDR
+      CidrBlock: !Ref VpcCidr
       EnableDnsSupport: true
       EnableDnsHostnames: true
       InstanceTenancy: default
@@ -143,7 +138,7 @@ Resources:
     Properties:
       MapPublicIpOnLaunch: true
       AvailabilityZone: !Sub ${AWS::Region}a
-      CidrBlock: !Ref PublicSubnetACIDR
+      CidrBlock: !Ref PublicSubnetACidr
       VpcId: !Ref VPC
       Tags:
         - Key: Name
@@ -153,7 +148,7 @@ Resources:
     Properties:
       MapPublicIpOnLaunch: true
       AvailabilityZone: !Sub ${AWS::Region}c
-      CidrBlock: !Ref PublicSubnetCCIDR
+      CidrBlock: !Ref PublicSubnetCCidr
       VpcId: !Ref VPC
       Tags:
         - Key: Name
@@ -163,7 +158,7 @@ Resources:
     Properties:
       MapPublicIpOnLaunch: false
       AvailabilityZone: !Sub ${AWS::Region}a
-      CidrBlock: !Ref PrivateSubnetACIDR
+      CidrBlock: !Ref PrivateSubnetACidr
       VpcId: !Ref VPC
       Tags:
         - Key: Name
@@ -173,7 +168,7 @@ Resources:
     Properties:
       MapPublicIpOnLaunch: false
       AvailabilityZone: !Sub ${AWS::Region}c
-      CidrBlock: !Ref PrivateSubnetCCIDR
+      CidrBlock: !Ref PrivateSubnetCCidr
       VpcId: !Ref VPC
       Tags:
         - Key: Name
@@ -272,7 +267,7 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub ${ProjectPrefix}SecurityGroupForALB
-  #Listener
+
   Listener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
@@ -282,7 +277,7 @@ Resources:
       LoadBalancerArn: !Ref ALB
       Port: 80
       Protocol: HTTP
-  #ALB
+
   ALB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -295,7 +290,7 @@ Resources:
         - !Ref PublicSubnetA
         - !Ref PublicSubnetC
       Type: application
-  #TargetGroup
+
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -364,7 +359,6 @@ Resources:
   #-------------------------------------------------------
   #   Lambda
   #-------------------------------------------------------
-  #API Gateway needs to be given the right to invoke AWS Lambda
   APIGatewayLambdaInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -372,7 +366,6 @@ Resources:
       FunctionName: !Ref TargetLambdaFunction
       Principal: elasticloadbalancing.amazonaws.com
 
-  #API Gateway Target Lambda Function
   TargetLambdaFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -383,11 +376,10 @@ Resources:
       Role: !Sub ${LambdaRole.Arn}
       Runtime: python3.9
       Timeout: 900
-      #X-Ray
       Tracing: Active
       Environment:
         Variables:
-          Key: Value
+          LOG_LEVEL: DEBUG
 
   # ------------------------------------------------------------#
   # IAM

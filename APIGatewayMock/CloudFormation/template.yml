@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: 2010-09-09
+AWSTemplateFormatVersion: "2010-09-09"
 Transform: "AWS::Serverless-2016-10-31"
 Description: API Gateway Mock
 Parameters:
@@ -13,13 +13,11 @@ Resources:
   #-------------------------------------------------------
   #   API Gateway
   #-------------------------------------------------------
-  #RestApi
   APIGatewayRestApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
       Name: api_gateway
 
-  #Resource
   APIGatewayResource:
     Type: AWS::ApiGateway::Resource
     Properties:
@@ -87,7 +85,6 @@ Resources:
       ResourceId: !Ref APIGatewayResource
       RestApiId: !Ref APIGatewayRestApi
 
-  #Deployment
   APIGatewayDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
@@ -99,8 +96,7 @@ Resources:
       StageDescription:
         # CloudWatch Logs
         DataTraceEnabled: true
-        LoggingLevel: ERROR #or INFO
+        LoggingLevel: ERROR
         # CloudWatch metrics
         MetricsEnabled: true
-        #X-Ray
         TracingEnabled: true
