@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Transform: "AWS::Serverless-2016-10-31"
+Transform: AWS::Serverless-2016-10-31
 Description: API Gateway Sample
 Parameters:
-  #APIGateway
+  # APIGateway
   APIGatewayStageName:
     Type: String
     AllowedValues:
@@ -152,7 +152,7 @@ Resources:
       Principal: apigateway.amazonaws.com
 
   #-------------------------------------------------------
-  #   CloudWatch Alarm
+  # CloudWatch Alarm
   #-------------------------------------------------------
   ConnectFunctionDurationAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -232,7 +232,7 @@ Resources:
       Statistic: Average
       Threshold: 5
   #-------------------------------------------------------
-  #   SNS
+  # SNS
   #-------------------------------------------------------
   SNSTopic:
     Type: AWS::SNS::Topic
@@ -240,7 +240,7 @@ Resources:
       TopicName: SNSTopic
 
   #-------------------------------------------------------
-  #   CloudWatch LogGroup
+  # CloudWatch LogGroup
   #-------------------------------------------------------
   APIGatewayExecutionLogGroup:
     Type: AWS::Logs::LogGroup
@@ -273,7 +273,7 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${DisConnectFunction}
 
   #-------------------------------------------------------
-  #   Lambda
+  # Lambda
   #-------------------------------------------------------
   ConnectFunction:
     Type: AWS::Serverless::Function

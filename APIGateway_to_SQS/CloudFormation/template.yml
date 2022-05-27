@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Transform: "AWS::Serverless-2016-10-31"
+Transform: AWS::Serverless-2016-10-31
 Description: API Gateway Sample
 Parameters:
   APIGatewayStageName:
@@ -10,7 +10,7 @@ Parameters:
 
 Resources:
   #-------------------------------------------------------
-  #   API Gateway
+  # API Gateway
   #-------------------------------------------------------
   APIGatewayAccount:
     Type: AWS::ApiGateway::Account
@@ -29,7 +29,6 @@ Resources:
       ParentId: !GetAtt APIGatewayRestApi.RootResourceId
       PathPart: target_sqs
 
-  #Get Method
   APIGatewayGetMethod:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -38,7 +37,6 @@ Resources:
       RequestParameters:
         method.request.querystring.id: true
       Integration:
-        #API GatewayがSQSを実行するためのIAM Role
         Credentials: !Sub ${APIGatewayRole.Arn}
         Type: AWS
         IntegrationHttpMethod: POST
@@ -57,7 +55,6 @@ Resources:
       ResourceId: !Ref APIGatewayResource
       RestApiId: !Ref APIGatewayRestApi
 
-  #Post Method
   APIGatewayPostMethod:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -94,12 +91,11 @@ Resources:
         # CloudWatch Logs
         DataTraceEnabled: true
         LoggingLevel: ERROR
-        # CloudWatch metrics
         MetricsEnabled: true
         TracingEnabled: true
 
   #-------------------------------------------------------
-  #   CloudWatch LogGroup
+  # CloudWatch LogGroup
   #-------------------------------------------------------
   APIGatewayExecutionLogGroup:
     Type: AWS::Logs::LogGroup

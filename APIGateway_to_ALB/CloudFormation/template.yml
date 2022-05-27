@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Transform: "AWS::Serverless-2016-10-31"
+Transform: AWS::Serverless-2016-10-31
 Description: API Gateway Sample
 Parameters:
   APIGatewayStageName:
@@ -8,31 +8,31 @@ Parameters:
       - test
       - prod
 
-  #Project Name Parameter
+  # Project Name Parameter
   ProjectPrefix:
     Type: String
     Default: ""
 
-  #NetWork Configuration Parameter
+  # NetWork Configuration Parameter
   VpcCidr:
     Type: String
-    Default: "192.168.0.0/16"
+    Default: 192.168.0.0/16
   PublicSubnetACidr:
     Type: String
-    Default: "192.168.0.0/24"
+    Default: 192.168.0.0/24
   PublicSubnetCCidr:
     Type: String
-    Default: "192.168.64.0/24"
+    Default: 192.168.64.0/24
   PrivateSubnetACidr:
     Type: String
-    Default: "192.168.128.0/24"
+    Default: 192.168.128.0/24
   PrivateSubnetCCidr:
     Type: String
-    Default: "192.168.192.0/24"
+    Default: 192.168.192.0/24
 
 Resources:
   #-------------------------------------------------------
-  #   API Gateway
+  # API Gateway
   #-------------------------------------------------------
   APIGatewayAccount:
     Type: AWS::ApiGateway::Account
@@ -51,7 +51,6 @@ Resources:
       ParentId: !GetAtt APIGatewayRestApi.RootResourceId
       PathPart: target_alb
 
-  #Get Method
   APIGatewayGetMethod:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -70,7 +69,6 @@ Resources:
       ResourceId: !Ref APIGatewayResource
       RestApiId: !Ref APIGatewayRestApi
 
-  #Post Method
   APIGatewayPostMethod:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -101,12 +99,11 @@ Resources:
         # CloudWatch Logs
         DataTraceEnabled: true
         LoggingLevel: ERROR
-        # CloudWatch metrics
         MetricsEnabled: true
         TracingEnabled: true
 
   # ------------------------------------------------------------#
-  #  VPC
+  # VPC
   # ------------------------------------------------------------#
   VPC:
     Type: AWS::EC2::VPC
@@ -131,7 +128,7 @@ Resources:
       VpcId: !Ref VPC
 
   # ------------------------------------------------------------#
-  #  Subnet
+  # Subnet
   # ------------------------------------------------------------#
   PublicSubnetA:
     Type: AWS::EC2::Subnet
@@ -175,7 +172,7 @@ Resources:
           Value: !Sub ${ProjectPrefix}private-subnet-c
 
   # ------------------------------------------------------------#
-  #  RouteTable
+  # RouteTable
   # ------------------------------------------------------------#
   PublicRouteTableA:
     Type: AWS::EC2::RouteTable
@@ -215,7 +212,7 @@ Resources:
       - InternetGatewayAttachment
     Properties:
       RouteTableId: !Ref PublicRouteTableA
-      DestinationCidrBlock: "0.0.0.0/0"
+      DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
   PublicRouteC:
     Type: AWS::EC2::Route
@@ -223,7 +220,7 @@ Resources:
       - InternetGatewayAttachment
     Properties:
       RouteTableId: !Ref PublicRouteTableC
-      DestinationCidrBlock: "0.0.0.0/0"
+      DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
 
   # ------------------------------------------------------------#
@@ -259,7 +256,7 @@ Resources:
       GroupDescription: This is for SecurityGroupForALB
       VpcId: !Ref VPC
       SecurityGroupIngress:
-        - CidrIp: "0.0.0.0/0"
+        - CidrIp: 0.0.0.0/0
           Description: This is for ALB
           FromPort: 80
           IpProtocol: tcp
@@ -308,7 +305,7 @@ Resources:
       UnhealthyThresholdCount: 2
 
   #-------------------------------------------------------
-  #   CloudWatch Alarm
+  # CloudWatch Alarm
   #-------------------------------------------------------
   LambdaDurationAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -331,7 +328,7 @@ Resources:
       Threshold: 5
 
   #-------------------------------------------------------
-  #   SNS
+  # SNS
   #-------------------------------------------------------
   SNSTopic:
     Type: AWS::SNS::Topic
@@ -339,7 +336,7 @@ Resources:
       TopicName: SNSTopic
 
   #-------------------------------------------------------
-  #   CloudWatch LogGroup
+  # CloudWatch LogGroup
   #-------------------------------------------------------
   APIGatewayExecutionLogGroup:
     Type: AWS::Logs::LogGroup
@@ -357,7 +354,7 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${TargetLambdaFunction}
 
   #-------------------------------------------------------
-  #   Lambda
+  # Lambda
   #-------------------------------------------------------
   APIGatewayLambdaInvokePermission:
     Type: AWS::Lambda::Permission

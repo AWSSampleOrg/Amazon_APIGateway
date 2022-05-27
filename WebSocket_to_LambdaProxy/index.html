@@ -21,23 +21,25 @@
         const ws = new WebSocket("wss://");
 
         //start
-        ws.onopen = function (e) {};
+        ws.onopen = (e) => {};
 
         //error
-        ws.onerror = function (error) {};
+        ws.onerror = (error) => {
+            console.log(
+                error instanceof Error ? error.message : "unknown error"
+            );
+        };
 
         //sendMessage
-        document
-            .querySelector("#sendMessage")
-            .addEventListener("click", function () {
-                const user_name = document.querySelector("#user_name").value;
-                const password = document.querySelector("#password").value;
-                const message = {
-                    action: "sendMessage",
-                    data: { user_name: user_name, password: password },
-                };
-                ws.send(JSON.stringify(message));
-            });
+        document.querySelector("#sendMessage").addEventListener("click", () => {
+            const user_name = document.querySelector("#user_name").value;
+            const password = document.querySelector("#password").value;
+            const message = {
+                action: "sendMessage",
+                data: { user_name: user_name, password: password },
+            };
+            ws.send(JSON.stringify(message));
+        });
 
         //got message
         ws.onmessage = function (e) {
@@ -45,10 +47,8 @@
         };
 
         //close connection
-        document
-            .querySelector("#finish")
-            .addEventListener("click", function () {
-                ws.close();
-            });
+        document.querySelector("#finish").addEventListener("click", () => {
+            ws.close();
+        });
     </script>
 </html>

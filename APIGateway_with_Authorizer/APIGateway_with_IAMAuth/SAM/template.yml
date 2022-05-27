@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Transform: "AWS::Serverless-2016-10-31"
+Transform: AWS::Serverless-2016-10-31
 Description: API Gateway Sample
 Parameters:
-  #APIGateway
+  # APIGateway
   APIGatewayStageName:
     Type: String
     AllowedValues:
@@ -11,7 +11,7 @@ Parameters:
 
 Resources:
   #-------------------------------------------------------
-  #   API Gateway
+  # API Gateway
   #-------------------------------------------------------
   APIGatewayAccount:
     Type: AWS::ApiGateway::Account
@@ -51,7 +51,7 @@ Resources:
       Principal: apigateway.amazonaws.com
 
   #-------------------------------------------------------
-  #   CloudWatch LogGroup
+  # CloudWatch LogGroup
   #-------------------------------------------------------
   APIGatewayExecutionLogGroup:
     Type: AWS::Logs::LogGroup
@@ -69,9 +69,8 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${TargetLambdaFunction}
 
   #-------------------------------------------------------
-  #   Cognito
+  # Cognito
   #-------------------------------------------------------
-  # Cognito User Pool
   UserPool:
     Type: AWS::Cognito::UserPool
     Properties:
@@ -102,7 +101,6 @@ Resources:
       RefreshTokenValidity: 7
       UserPoolId: !Ref UserPool
 
-  # Cognito Identity Pool
   IdentityPool:
     Type: AWS::Cognito::IdentityPool
     Properties:
@@ -112,7 +110,6 @@ Resources:
         - ClientId: !Ref UserPoolClient
           ProviderName: !GetAtt UserPool.ProviderName
 
-  #UnauthenticatedRole
   UnauthenticatedRole:
     Type: AWS::IAM::Role
     Properties:
@@ -132,7 +129,6 @@ Resources:
               ForAnyValue:StringLike:
                 cognito-identity.amazonaws.com:amr: unauthenticated
 
-  #AuthenticatedRole
   AuthenticatedRole:
     Type: AWS::IAM::Role
     Properties:
@@ -152,7 +148,7 @@ Resources:
               ForAnyValue:StringLike:
                 cognito-identity.amazonaws.com:amr: authenticated
 
-  # Attach the UnauthenticatedRole and AuthenticatedRole to those realated in the Federated Identity
+  # Attach the UnauthenticatedRole and AuthenticatedRole to those related in the Federated Identity
   RoleAttachment:
     Type: AWS::Cognito::IdentityPoolRoleAttachment
     Properties:
@@ -161,7 +157,6 @@ Resources:
         unauthenticated: !GetAtt UnauthenticatedRole.Arn
         authenticated: !GetAtt AuthenticatedRole.Arn
 
-  #GroupRole
   GroupRole:
     Type: AWS::IAM::Role
     Properties:
@@ -180,9 +175,8 @@ Resources:
                 cognito-identity.amazonaws.com:aud: !Ref IdentityPool
 
   #-------------------------------------------------------
-  #   Lambda
+  # Lambda
   #-------------------------------------------------------
-
   TargetLambdaFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -212,6 +206,7 @@ Resources:
               - sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AWSLambda_FullAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Path: /
       RoleName: LambdaRole
 

@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Transform: "AWS::Serverless-2016-10-31"
+Transform: AWS::Serverless-2016-10-31
 Description: API Gateway Sample
 Parameters:
-  #APIGateway
+  # APIGateway
   APIGatewayStageName:
     Type: String
     AllowedValues:
@@ -11,7 +11,7 @@ Parameters:
 
 Resources:
   #-------------------------------------------------------
-  #   API Gateway
+  # API Gateway
   #-------------------------------------------------------
   APIGatewayAccount:
     Type: AWS::ApiGateway::Account
@@ -58,7 +58,7 @@ Resources:
       Principal: apigateway.amazonaws.com
 
   #-------------------------------------------------------
-  #   CloudWatch LogGroup
+  # CloudWatch LogGroup
   #-------------------------------------------------------
   APIGatewayExecutionLogGroup:
     Type: AWS::Logs::LogGroup
@@ -81,7 +81,7 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${TargetLambdaFunction}
 
   #-------------------------------------------------------
-  #   Lambda
+  # Lambda
   #-------------------------------------------------------
   LambdaAuthorizer:
     Type: AWS::Serverless::Function
@@ -130,6 +130,7 @@ Resources:
               - sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AWSLambda_FullAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Path: /
       RoleName: LambdaRole
 

@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Transform: "AWS::Serverless-2016-10-31"
+Transform: AWS::Serverless-2016-10-31
 Description: API Gateway Sample
 Parameters:
-  #APIGateway
+  # APIGateway
   APIGatewayStageName:
     Type: String
     AllowedValues:
@@ -11,7 +11,7 @@ Parameters:
 
 Resources:
   #-------------------------------------------------------
-  #   API Gateway
+  # API Gateway
   #-------------------------------------------------------
   APIGatewayAccount:
     Type: AWS::ApiGateway::Account
@@ -51,7 +51,7 @@ Resources:
       Principal: apigateway.amazonaws.com
 
   #-------------------------------------------------------
-  #   CloudWatch LogGroup
+  # CloudWatch LogGroup
   #-------------------------------------------------------
   APIGatewayExecutionLogGroup:
     Type: AWS::Logs::LogGroup
@@ -69,9 +69,8 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${TargetLambdaFunction}
 
   #-------------------------------------------------------
-  #   Lambda
+  # Lambda
   #-------------------------------------------------------
-
   TargetLambdaFunction:
     Type: AWS::Serverless::Function
     Properties:

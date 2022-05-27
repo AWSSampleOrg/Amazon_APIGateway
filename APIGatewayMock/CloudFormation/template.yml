@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Transform: "AWS::Serverless-2016-10-31"
+Transform: AWS::Serverless-2016-10-31
 Description: API Gateway Mock
 Parameters:
-  #APIGateway
+  # APIGateway
   APIGatewayStageName:
     Type: String
     AllowedValues:
@@ -11,7 +11,7 @@ Parameters:
 
 Resources:
   #-------------------------------------------------------
-  #   API Gateway
+  # API Gateway
   #-------------------------------------------------------
   APIGatewayRestApi:
     Type: AWS::ApiGateway::RestApi
@@ -25,7 +25,6 @@ Resources:
       ParentId: !GetAtt APIGatewayRestApi.RootResourceId
       PathPart: mock_test
 
-  #POST Method
   APIGatewayPostMethod:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -55,7 +54,6 @@ Resources:
       ResourceId: !Ref APIGatewayResource
       RestApiId: !Ref APIGatewayRestApi
 
-  #Get Method
   APIGatewayGetMethod:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -97,6 +95,5 @@ Resources:
         # CloudWatch Logs
         DataTraceEnabled: true
         LoggingLevel: ERROR
-        # CloudWatch metrics
         MetricsEnabled: true
         TracingEnabled: true

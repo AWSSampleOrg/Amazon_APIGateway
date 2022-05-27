@@ -1,8 +1,8 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Transform: "AWS::Serverless-2016-10-31"
+Transform: AWS::Serverless-2016-10-31
 Description: API Gateway Sample
 Parameters:
-  #APIGateway
+  # APIGateway
   APIGatewayStageName:
     Type: String
     AllowedValues:
@@ -11,7 +11,7 @@ Parameters:
 
 Resources:
   #-------------------------------------------------------
-  #   API Gateway
+  # API Gateway
   #-------------------------------------------------------
   APIGatewayAccount:
     Type: AWS::ApiGateway::Account
@@ -30,7 +30,6 @@ Resources:
       ParentId: !GetAtt APIGatewayRestApi.RootResourceId
       PathPart: lambda_handler
 
-  #Method
   APIGatewayMethod:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -54,7 +53,6 @@ Resources:
         #       - "\"source-ip\" : \"$context.identity.sourceIp\",\n \"user\" : \"$context.identity.user\",\n \"user-agent\" : \"$context.identity.userAgent\",\n \"user-arn\" : \"$context.identity.userArn\",\n \"request-id\" : \"$context.requestId\",\n \"resource-id\" : \"$context.resourceId\",\n \"resource-path\" : \"$context.resourcePath\"\n }\n}"
         Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TargetLambdaFunction.Arn}/invocations
       MethodResponses:
-        # - StatusCode: 202 #default response status code with async invocation
         - StatusCode: 200
       ResourceId: !Ref APIGatewayResource
       RestApiId: !Ref APIGatewayRestApi
@@ -70,7 +68,6 @@ Resources:
         # CloudWatch Logs
         DataTraceEnabled: true
         LoggingLevel: ERROR
-        # CloudWatch metrics
         MetricsEnabled: true
         TracingEnabled: true
 
@@ -82,7 +79,7 @@ Resources:
       Principal: apigateway.amazonaws.com
 
   #-------------------------------------------------------
-  #   CloudWatch Alarm
+  # CloudWatch Alarm
   #-------------------------------------------------------
   LambdaDurationAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -105,7 +102,7 @@ Resources:
       Threshold: 5
 
   #-------------------------------------------------------
-  #   SNS
+  # SNS
   #-------------------------------------------------------
   SNSTopic:
     Type: AWS::SNS::Topic
@@ -113,7 +110,7 @@ Resources:
       TopicName: SNSTopic
 
   #-------------------------------------------------------
-  #   CloudWatch LogGroup
+  # CloudWatch LogGroup
   #-------------------------------------------------------
   APIGatewayExecutionLogGroup:
     Type: AWS::Logs::LogGroup
@@ -131,7 +128,7 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${TargetLambdaFunction}
 
   #-------------------------------------------------------
-  #   Lambda
+  # Lambda
   #-------------------------------------------------------
   TargetLambdaFunction:
     Type: AWS::Serverless::Function
