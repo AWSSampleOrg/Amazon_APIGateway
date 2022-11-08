@@ -130,6 +130,9 @@ Resources:
       Runtime: python3.9
       Timeout: 900
       Tracing: Active
+      Environment:
+        Variables:
+          LOG_LEVEL: DEBUG
 
   # ------------------------------------------------------------#
   # IAM

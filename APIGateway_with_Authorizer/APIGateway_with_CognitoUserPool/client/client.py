@@ -1,8 +1,4 @@
 #-*- encoding:utf-8 -*-
-import json
-import os
-import sys
-#Third Party
 import boto3
 from warrant.aws_srp import AWSSRP
 
@@ -73,7 +69,7 @@ class Cognito:
             ChallengeName = 'PASSWORD_VERIFIER',
             ChallengeResponses = srp.process_challenge(response['ChallengeParameters'])
         )
-        print("Successfully Signin")
+        print("Successfully Sign in")
 
 if __name__ == "__main__":
     cognito = Cognito()

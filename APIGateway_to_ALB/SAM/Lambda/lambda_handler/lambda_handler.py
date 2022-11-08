@@ -13,7 +13,7 @@ logger.propagate = False
 
 
 def lambda_handler(event, context):
-    logger.info(json.dumps(event))
+    logger.info(event)
     return {
         "statusCode": 200,
         "body": json.dumps({"message": "OK"})

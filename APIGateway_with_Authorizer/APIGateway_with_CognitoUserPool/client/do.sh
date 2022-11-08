@@ -1,14 +1,14 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [ -z $1 ] ; then
     echo "Give me docker command parameter"
     exit 1
 fi
 
-readonly profile_name="default" 2> /dev/null
-readonly AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text --profile ${profile_name}) 2> /dev/null
-readonly REGION=$(aws configure get region --profile ${profile_name}) 2> /dev/null
-readonly image_name="cognito:latest" 2> /dev/null
+profile_name="default"
+AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text --profile ${profile_name})
+REGION=$(aws configure get region --profile ${profile_name})
+image_name="cognito:latest"
 
 function blue()
 {

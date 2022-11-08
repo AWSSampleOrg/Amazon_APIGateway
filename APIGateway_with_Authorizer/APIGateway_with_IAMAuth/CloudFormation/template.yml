@@ -197,6 +197,12 @@ Resources:
       Runtime: python3.9
       Timeout: 900
       Tracing: Active
+      Environment:
+        Variables:
+          LOG_LEVEL: DEBUG
+          ACCESS_CONTROL_ALLOW_ORIGIN: *
+          ACCESS_CONTROL_ALLOW_METHODS: *
+          ACCESS_CONTROL_ALLOW_HEADERS: *
 
   # ------------------------------------------------------------#
   # IAM
