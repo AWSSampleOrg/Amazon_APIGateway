@@ -1,4 +1,5 @@
 # -*- encoding: utf-8 -*-
+import json
 from logging import getLogger, StreamHandler, DEBUG
 import os
 
@@ -13,7 +14,7 @@ logger.propagate = False
 
 
 def lambda_handler(event, context):
-    logger.info(event)
+    logger.info(json.dumps(event))
 
     if event["Authorization"] == "1":
         return generate_policy("Allow", event["methodArn"])
