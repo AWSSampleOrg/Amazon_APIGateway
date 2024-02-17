@@ -12,12 +12,16 @@
     "**/npm-packages-offline-cache": true,
     "**/dist": true
   },
-  "eslint.packageManager": "yarn",
-  "eslint.validate": ["javascript", "typescript"],
+  // JS/TS
   "eslint.lintTask.enable": true,
   "typescript.tsdk": "node_modules/typescript/lib",
-  "npm.packageManager": "yarn",
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "npm.packageManager": "pnpm",
+  "[typescript][javascript][typescriptreact][javascriptreact][json][jsonc][jsonl][yaml][markdown]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": true
+    },
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
   "cSpell.enabled": true,
   "cSpell.words": [
     "openapi",
