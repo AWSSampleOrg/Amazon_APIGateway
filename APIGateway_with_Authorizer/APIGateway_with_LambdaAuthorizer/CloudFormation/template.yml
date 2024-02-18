@@ -67,9 +67,13 @@ Resources:
       RestApiId: !Ref APIGatewayRestApi
       StageName: !Sub ${APIGatewayStageName}
       StageDescription:
+        # https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html#context-variable-reference?cmpid=docs_apigateway_console
+        AccessLogSetting:
+          DestinationArn: !Sub ${APIGatewayAccessLogGroup.Arn}
+          Format: '{ "requestId":"$context.requestId", "extendedRequestId":"$context.extendedRequestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod", "resourcePath":"$context.resourcePath", "status":"$context.status", "protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
         # CloudWatch Logs
         DataTraceEnabled: true
-        LoggingLevel: ERROR
+        LoggingLevel: INFO
         MetricsEnabled: true
         TracingEnabled: true
 

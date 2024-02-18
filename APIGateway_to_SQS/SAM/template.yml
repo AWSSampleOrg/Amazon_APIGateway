@@ -35,7 +35,7 @@ Resources:
         # execution logging
         # https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-logging.html
         - DataTraceEnabled: true
-          LoggingLevel: ERROR
+          LoggingLevel: INFO
           ResourcePath: "/*"
           HttpMethod: "*"
           MetricsEnabled: true
