@@ -1,54 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Document</title>
-    </head>
-    <body>
-        <div>
-            name : <input type="text" id="user_name" /> password :
-            <input type="password" id="password" />
-        </div>
-        <div>
-            <button id="sendMessage">submit</button>
-        </div>
-        <div>
-            <button id="finish">close connection</button>
-        </div>
-    </body>
-    <script>
-        const ws = new WebSocket("wss://");
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div>
+      name : <input type="text" id="user_name" /> password :
+      <input type="password" id="password" />
+    </div>
+    <div>
+      <button id="sendMessage">submit</button>
+    </div>
+    <div>
+      <button id="finish">close connection</button>
+    </div>
+  </body>
+  <script>
+    const ws = new WebSocket("wss://");
 
-        //start
-        ws.onopen = (e) => {};
+    //start
+    ws.onopen = (e) => {};
 
-        //error
-        ws.onerror = (error) => {
-            console.log(
-                error instanceof Error ? error.message : "unknown error"
-            );
-        };
+    //error
+    ws.onerror = (error) => {
+      console.log(error instanceof Error ? error.message : "unknown error");
+    };
 
-        //sendMessage
-        document.querySelector("#sendMessage").addEventListener("click", () => {
-            const user_name = document.querySelector("#user_name").value;
-            const password = document.querySelector("#password").value;
-            const message = {
-                action: "sendMessage",
-                data: { user_name: user_name, password: password },
-            };
-            ws.send(JSON.stringify(message));
-        });
+    //sendMessage
+    document.querySelector("#sendMessage").addEventListener("click", () => {
+      const user_name = document.querySelector("#user_name").value;
+      const password = document.querySelector("#password").value;
+      const message = {
+        action: "sendMessage",
+        data: { user_name: user_name, password: password },
+      };
+      ws.send(JSON.stringify(message));
+    });
 
-        //got message
-        ws.onmessage = function (e) {
-            console.log(e.data);
-        };
+    //got message
+    ws.onmessage = function (e) {
+      console.log(e.data);
+    };
 
-        //close connection
-        document.querySelector("#finish").addEventListener("click", () => {
-            ws.close();
-        });
-    </script>
+    //close connection
+    document.querySelector("#finish").addEventListener("click", () => {
+      ws.close();
+    });
+  </script>
 </html>

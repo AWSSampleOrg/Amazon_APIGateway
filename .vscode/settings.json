@@ -16,7 +16,7 @@
   "eslint.lintTask.enable": true,
   "typescript.tsdk": "node_modules/typescript/lib",
   "npm.packageManager": "pnpm",
-  "[typescript][javascript][typescriptreact][javascriptreact][json][jsonc][jsonl][yaml][markdown]": {
+  "[typescript][javascript][typescriptreact][javascriptreact][json][jsonc][jsonl][yaml][markdown][html]": {
     "editor.codeActionsOnSave": {
       "source.fixAll.eslint": true
     },
