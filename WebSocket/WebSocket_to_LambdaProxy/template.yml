@@ -283,7 +283,7 @@ Resources:
       Handler: lambda_handler.lambda_handler
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}
-      Runtime: python3.9
+      Runtime: python3.12
       Timeout: 900
       Tracing: Active
       Environment:
@@ -298,7 +298,7 @@ Resources:
       Handler: lambda_handler.lambda_handler
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}
-      Runtime: python3.9
+      Runtime: python3.12
       Timeout: 900
       Tracing: Active
       Environment:
@@ -313,7 +313,7 @@ Resources:
       Handler: lambda_handler.lambda_handler
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}
-      Runtime: python3.9
+      Runtime: python3.12
       Timeout: 900
       Tracing: Active
       Environment:
@@ -328,7 +328,7 @@ Resources:
       Handler: lambda_handler.lambda_handler
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}
-      Runtime: python3.9
+      Runtime: python3.12
       Timeout: 900
       Tracing: Active
       Environment:

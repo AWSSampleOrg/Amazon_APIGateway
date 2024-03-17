@@ -6,7 +6,7 @@ paths:
   /target_alb:
     get:
       responses:
-        200:
+        "200":
           description: "200 response"
           content: {}
       x-amazon-apigateway-integration:
@@ -22,7 +22,7 @@ paths:
         httpMethod: GET
     post:
       responses:
-        200:
+        "200":
           description: "200 response"
           content: {}
       x-amazon-apigateway-integration:

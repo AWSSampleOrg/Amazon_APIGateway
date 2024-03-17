@@ -6,7 +6,7 @@ paths:
   /lambda_handler:
     post:
       responses:
-        200:
+        "200":
           description: "200 response"
           content: {}
       security:
@@ -19,7 +19,7 @@ paths:
         type: aws_proxy
     options:
       responses:
-        200:
+        "200":
           description: "200 response"
           headers:
             Access-Control-Allow-Origin:
@@ -41,7 +41,7 @@ paths:
               method.response.header.Access-Control-Allow-Headers: "'Authorization,Content-Type,X-Amz-Date,Authorization,X-Requested-With,X-Requested-By,X-Api-Key'"
               method.response.header.Access-Control-Allow-Origin: "'*'"
         requestTemplates:
-          application/json: "{\"statusCode\": 200}"
+          application/json: '{"statusCode": 200}'
         passthroughBehavior: "when_no_match"
         type: "mock"
 components:

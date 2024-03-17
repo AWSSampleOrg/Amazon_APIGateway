@@ -6,13 +6,13 @@ paths:
   /target_sqs:
     get:
       parameters:
-      - name: id
-        in: query
-        required: true
-        schema:
-          type: string
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
       responses:
-        200:
+        "200":
           description: "200 response"
           content: {}
       x-amazon-apigateway-integration:
@@ -31,7 +31,7 @@ paths:
         type: aws
     post:
       responses:
-        200:
+        "200":
           description: "200 response"
           content: {}
       x-amazon-apigateway-integration:
@@ -48,4 +48,4 @@ paths:
         passthroughBehavior: when_no_match
         httpMethod: POST
         type: aws
-mponents: {}
+components: {}
