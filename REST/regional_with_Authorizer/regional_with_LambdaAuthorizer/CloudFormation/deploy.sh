@@ -15,4 +15,4 @@ aws cloudformation deploy \
     --stack-name ${STACK_NAME} \
     --parameter-overrides \
     APIGatewayStageName=test \
-    --capabilities CAPABILITY_NAMED_IAMMM
+    --capabilities CAPABILITY_NAMED_IAM

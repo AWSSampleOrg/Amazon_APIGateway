@@ -18,7 +18,7 @@
   "npm.packageManager": "pnpm",
   "[typescript][javascript][typescriptreact][javascriptreact][json][jsonc][jsonl][yaml][markdown][html]": {
     "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": true
+      "source.fixAll.eslint": "explicit"
     },
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
