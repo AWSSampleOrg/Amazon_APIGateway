@@ -2,6 +2,11 @@ AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: API Gateway Sample
 Parameters:
+  # Project Name Parameter
+  ProjectPrefix:
+    Type: String
+    Default: ""
+
   # APIGateway
   APIGatewayStageName:
     Type: String
@@ -43,7 +48,18 @@ Resources:
         Types:
           - PRIVATE
         VpcEndpointIds:
-          - String
+          - !Ref VPCEndpoint
+      Policy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: execute-api:Invoke
+            # This REST API ID should be followed by AWS Account ID instead of specifying wildcard after this Cfn is created.
+            Resource: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*
+            Condition:
+              StringEquals:
+                aws:sourceVpce: !Sub ${VPCEndpoint}
 
   APIGatewayResource:
     Type: AWS::ApiGateway::Resource
@@ -170,19 +186,6 @@ Resources:
       Environment:
         Variables:
           LOG_LEVEL: DEBUG
-      VpcConfig:
-        SecurityGroupIds:
-          - !Ref TargetLambdaSecurityGroup
-        SubnetIds:
-          - !Ref PrivateSubnetA
-          - !Ref PrivateSubnetC
-
-  TargetLambdaSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      VpcId: !Ref VPC
-      GroupDescription: TargetLambdaSecurityGroup
-      GroupName: TargetLambdaSecurityGroup
 
   # ------------------------------------------------------------#
   # IAM
@@ -370,16 +373,28 @@ Resources:
   #-------------------------------------------------------
   #   VPC Endpoint
   #-------------------------------------------------------
+  SourceInstanceSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - FromPort: 22
+          IpProtocol: tcp
+          CidrIp: "0.0.0.0/0"
+          ToPort: 22
+      GroupDescription: SourceInstanceSecurityGroup
+      GroupName: SourceInstanceSecurityGroup
+
   VPCEndpointSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       VpcId: !Ref VPC
       SecurityGroupIngress:
-        - FromPort: 0
+        - FromPort: 443
           IpProtocol: tcp
-          SourceSecurityGroupId: !Ref SourceLambdaSecurityGroup
-          ToPort: 65535
-      GroupDescription: "Security-Group for VPC Endpoint"
+          SourceSecurityGroupId: !Ref SourceInstanceSecurityGroup
+          ToPort: 443
+      GroupDescription: VPCEndpointSecurityGroup
       GroupName: VPCEndpointSecurityGroup
 
   VPCEndpoint:
@@ -394,3 +409,16 @@ Resources:
         - !Ref PrivateSubnetC
       ServiceName: !Sub com.amazonaws.${AWS::Region}.execute-api
       VpcId: !Ref VPC
+
+Outputs:
+  APIGatewayApiId:
+    Description: APIGatewayRestApiId
+    Value: !Ref APIGatewayRestApi
+    Export:
+      Name: APIGatewayRestApi
+
+  VPCEndpointId:
+    Description: VPCEndpointId
+    Value: !Ref VPCEndpoint
+    Export:
+      Name: VPCEndpointId
