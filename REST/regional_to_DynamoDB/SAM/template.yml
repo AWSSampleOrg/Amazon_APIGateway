@@ -1,0 +1,100 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: API Gateway Sample
+Parameters:
+  # APIGateway
+  APIGatewayStageName:
+    Type: String
+    AllowedValues:
+      - test
+      - prod
+
+Resources:
+  #-------------------------------------------------------
+  # API Gateway
+  #-------------------------------------------------------
+  APIGatewayAccount:
+    Type: AWS::ApiGateway::Account
+    Properties:
+      CloudWatchRoleArn: !Sub ${APIGatewayRole.Arn}
+
+  APIGatewayRestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      # access logging
+      # https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html#context-variable-reference?cmpid=docs_apigateway_console
+      AccessLogSetting:
+        DestinationArn: !Sub ${APIGatewayAccessLogGroup.Arn}
+        Format: '{ "requestId":"$context.requestId", "extendedRequestId":"$context.extendedRequestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod", "resourcePath":"$context.resourcePath", "status":"$context.status", "protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      Name: api_gateway
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: swagger.yml
+      MethodSettings:
+        # execution logging
+        # https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-logging.html
+        - DataTraceEnabled: true
+          LoggingLevel: INFO
+          ResourcePath: "/*"
+          HttpMethod: "*"
+          MetricsEnabled: true
+      TracingEnabled: true
+      StageName: !Sub ${APIGatewayStageName}
+
+  #-------------------------------------------------------
+  # CloudWatch LogGroup
+  #-------------------------------------------------------
+  APIGatewayExecutionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub API-Gateway-Execution-Logs_${APIGatewayRestApi}/${APIGatewayStageName}
+
+  APIGatewayAccessLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub API-Gateway-Access-Logs_${APIGatewayRestApi}/${APIGatewayStageName}
+
+  #-------------------------------------------------------
+  # DynamoDB
+  #-------------------------------------------------------
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      TableName: users
+
+  # ------------------------------------------------------------#
+  # IAM
+  # ------------------------------------------------------------#
+  APIGatewayRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+      Path: /
+      RoleName: APIGatewayRole
+
+Outputs:
+  APIGatewayEndpointUrl:
+    Description: Endpoint URL
+    Value: !Sub https://${APIGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com/${APIGatewayStageName}
