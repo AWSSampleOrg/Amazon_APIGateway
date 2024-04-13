@@ -66,7 +66,7 @@ Resources:
         MetricsEnabled: true
         TracingEnabled: true
 
-  APIGatewayLambdaInvokeRole:
+  APIGatewayLambdaInvokePermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
@@ -204,9 +204,9 @@ Resources:
       Environment:
         Variables:
           LOG_LEVEL: DEBUG
-          ACCESS_CONTROL_ALLOW_ORIGIN: *
-          ACCESS_CONTROL_ALLOW_METHODS: *
-          ACCESS_CONTROL_ALLOW_HEADERS: *
+          ACCESS_CONTROL_ALLOW_ORIGIN: "*"
+          ACCESS_CONTROL_ALLOW_METHODS: "*"
+          ACCESS_CONTROL_ALLOW_HEADERS: "*"
 
   # ------------------------------------------------------------#
   # IAM
