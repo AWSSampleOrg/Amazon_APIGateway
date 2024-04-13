@@ -1,0 +1,200 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: API Gateway Sample
+Parameters:
+  # APIGateway
+  APIGatewayStageName:
+    Type: String
+    AllowedValues:
+      - test
+      - prod
+
+Resources:
+  #-------------------------------------------------------
+  # API Gateway
+  #-------------------------------------------------------
+  APIGatewayHttpApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: http_api
+      ProtocolType: HTTP
+
+  APIGatewayHttpApiLambdaProxy:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref APIGatewayHttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationMethod: POST
+      PayloadFormatVersion: "2.0"
+      IntegrationUri: !Sub "arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TargetLambdaFunction.Arn}/invocations"
+
+  APIGatewayHttpApiAuthorizer:
+    Type: AWS::ApiGatewayV2::Authorizer
+    Properties:
+      Name: LambdaAuthorizer
+      ApiId: !Ref APIGatewayHttpApi
+      AuthorizerType: REQUEST
+      # AuthorizerCredentialsArn: !Sub ${APIGatewayRole.Arn}
+      AuthorizerPayloadFormatVersion: 2.0
+      AuthorizerUri: !Sub arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaAuthorizer.Arn}/invocations
+      AuthorizerResultTtlInSeconds: 0
+      EnableSimpleResponses: false
+      # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-apigatewayv2-authorizer.html#cfn-apigatewayv2-authorizer-authorizercredentialsarn
+      # For HTTP APIs, use selection expressions prefixed with $, for example, $request.header.Auth, $request.querystring.Name.
+      # These parameters are used to perform runtime validation
+      # for Lambda-based authorizers
+      # by verifying all of the identity-related request parameters are present in the request, not null, and non-empty.
+      # Only when this is true does the authorizer invoke the authorizer Lambda function.
+      # Otherwise, it returns a 401 Unauthorized response without calling the Lambda function.
+      # For HTTP APIs, identity sources are also used as the cache key when caching is enabled.
+      IdentitySource:
+        # https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-lambda-authorizer.html
+        # Header names are case-insensitive. (And it'd be converted to lower-case by APIGateway)
+        - $request.header.Auth
+
+  APIGatewayHttpApiRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref APIGatewayHttpApi
+      RouteKey: GET /lambda_handler
+      AuthorizerId: !Sub ${APIGatewayHttpApiAuthorizer.AuthorizerId}
+      AuthorizationType: CUSTOM
+      Target: !Sub integrations/${APIGatewayHttpApiLambdaProxy}
+
+  APIGatewayHttpApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      AutoDeploy: true
+      StageName: !Sub ${APIGatewayStageName}
+      ApiId: !Ref APIGatewayHttpApi
+      AccessLogSettings:
+        DestinationArn: !GetAtt APIGatewayAccessLogGroup.Arn
+        Format: >-
+          { "accountId": "$context.accountId",
+          "apiId": "$context.apiId",
+          "awsEndpointRequestId": "$context.awsEndpointRequestId",
+          "httpMethod":"$context.httpMethod",
+          "requestId":"$context.requestId",
+          "requestTime":"$context.requestTime",
+          "requestTimeEpoch":"$context.requestTimeEpoch",
+          "responseLatency":"$context.responseLatency",
+          "responseLength":"$context.responseLength",
+          "routeKey":"$context.routeKey",
+          "stage":"$context.stage",
+          "status": "$context.status" }
+
+  LambdaAuthorizerInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref LambdaAuthorizer
+      Principal: apigateway.amazonaws.com
+
+  APIGatewayLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref TargetLambdaFunction
+      Principal: apigateway.amazonaws.com
+
+  #-------------------------------------------------------
+  # CloudWatch LogGroup
+  #-------------------------------------------------------
+  APIGatewayAccessLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub API-Gateway-Access-Logs_${APIGatewayHttpApi}/${APIGatewayStageName}
+
+  LambdaAuthorizerLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${LambdaAuthorizer}
+
+  TargetLambdaFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${TargetLambdaFunction}
+
+  #-------------------------------------------------------
+  # Lambda
+  #-------------------------------------------------------
+  LambdaAuthorizer:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Lambda/authorizer
+      FunctionName: authorizer
+      Handler: authorizer.lambda_handler
+      MemorySize: 128
+      Role: !Sub ${LambdaRole.Arn}
+      Runtime: python3.12
+      Timeout: 900
+      Tracing: Active
+      Environment:
+        Variables:
+          LOG_LEVEL: DEBUG
+
+  TargetLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Lambda/lambda_handler
+      FunctionName: lambda_handler
+      Handler: lambda_handler.lambda_handler
+      MemorySize: 128
+      Role: !Sub ${LambdaRole.Arn}
+      Runtime: python3.12
+      Timeout: 900
+      Tracing: Active
+      Environment:
+        Variables:
+          LOG_LEVEL: DEBUG
+
+  # ------------------------------------------------------------#
+  # IAM
+  # ------------------------------------------------------------#
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSLambda_FullAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Path: /
+      RoleName: LambdaRole
+
+  APIGatewayRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !Sub ${LambdaAuthorizer.Arn}
+      RoleName: APIGatewayRole
+
+Outputs:
+  APIGatewayHttpApiEndpoint:
+    Description: APIGatewayHttpApiEndpoint
+    Value: !Sub ${APIGatewayHttpApi.ApiEndpoint}
+    Export:
+      Name: APIGatewayHttpApiEndpoint
