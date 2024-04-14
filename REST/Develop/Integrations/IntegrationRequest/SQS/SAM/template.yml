@@ -8,6 +8,10 @@ Parameters:
       - test
       - prod
 
+Globals:
+  Api:
+    OpenApiVersion: 3.0.1
+
 Resources:
   #-------------------------------------------------------
   # API Gateway

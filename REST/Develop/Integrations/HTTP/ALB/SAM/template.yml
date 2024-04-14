@@ -30,6 +30,10 @@ Parameters:
     Type: String
     Default: 192.168.192.0/24
 
+Globals:
+  Api:
+    OpenApiVersion: 3.0.1
+
 Resources:
   #-------------------------------------------------------
   # API Gateway
