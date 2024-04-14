@@ -73,112 +73,6 @@ Resources:
       LogGroupName: !Sub /aws/lambda/${TargetLambdaFunction}
 
   #-------------------------------------------------------
-  # Cognito
-  #-------------------------------------------------------
-  UserPool:
-    Type: AWS::Cognito::UserPool
-    Properties:
-      UserPoolName: UserPool
-      AccountRecoverySetting:
-        RecoveryMechanisms:
-          - Name: verified_email
-            Priority: 1
-      AliasAttributes:
-        - email
-      AutoVerifiedAttributes:
-        - email
-      Schema:
-        - AttributeDataType: String
-          Name: email
-          Required: True
-
-  #App clients
-  UserPoolClient:
-    Type: AWS::Cognito::UserPoolClient
-    Properties:
-      ClientName: UserPool-client
-      GenerateSecret: false #Do not create Client Secret
-      ExplicitAuthFlows:
-        - ADMIN_NO_SRP_AUTH
-        - USER_PASSWORD_AUTH
-      PreventUserExistenceErrors: ENABLED
-      RefreshTokenValidity: 7
-      UserPoolId: !Ref UserPool
-
-  IdentityPool:
-    Type: AWS::Cognito::IdentityPool
-    Properties:
-      AllowUnauthenticatedIdentities: true
-      IdentityPoolName: IdentityPool
-      CognitoIdentityProviders:
-        - ClientId: !Ref UserPoolClient
-          ProviderName: !GetAtt UserPool.ProviderName
-
-  UnauthenticatedRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: UnauthenticatedRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonAPIGatewayInvokeFullAccess
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Action: sts:AssumeRoleWithWebIdentity
-            Principal:
-              Federated: cognito-identity.amazonaws.com
-            Condition:
-              StringEquals:
-                cognito-identity.amazonaws.com:aud: !Ref IdentityPool
-              ForAnyValue:StringLike:
-                cognito-identity.amazonaws.com:amr: unauthenticated
-
-  AuthenticatedRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: AuthenticatedRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonAPIGatewayInvokeFullAccess
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Action: sts:AssumeRoleWithWebIdentity
-            Principal:
-              Federated: cognito-identity.amazonaws.com
-            Condition:
-              StringEquals:
-                cognito-identity.amazonaws.com:aud: !Ref IdentityPool
-              ForAnyValue:StringLike:
-                cognito-identity.amazonaws.com:amr: authenticated
-
-  # Attach the UnauthenticatedRole and AuthenticatedRole to those related in the Federated Identity
-  RoleAttachment:
-    Type: AWS::Cognito::IdentityPoolRoleAttachment
-    Properties:
-      IdentityPoolId: !Ref IdentityPool
-      Roles:
-        unauthenticated: !GetAtt UnauthenticatedRole.Arn
-        authenticated: !GetAtt AuthenticatedRole.Arn
-
-  GroupRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: GroupRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonAPIGatewayInvokeFullAccess
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Action: sts:AssumeRoleWithWebIdentity
-            Principal:
-              Federated: cognito-identity.amazonaws.com
-            Condition:
-              StringEquals:
-                cognito-identity.amazonaws.com:aud: !Ref IdentityPool
-
-  #-------------------------------------------------------
   # Lambda
   #-------------------------------------------------------
   TargetLambdaFunction:
@@ -236,3 +130,10 @@ Resources:
         - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
       Path: /
       RoleName: APIGatewayRole
+
+Outputs:
+  APIGatewayRestApiId:
+    Description: APIGatewayRestApiId
+    Value: !Ref APIGatewayRestApi
+    Export:
+      Name: APIGatewayRestApiId
