@@ -240,3 +240,10 @@ Resources:
         - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
       Path: /
       RoleName: APIGatewayRole
+
+Outputs:
+  APIGatewayRestApiId:
+    Description: APIGatewayRestApiId
+    Value: !Ref APIGatewayRestApi
+    Export:
+      Name: APIGatewayRestApiId

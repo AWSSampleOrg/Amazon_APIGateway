@@ -8,9 +8,7 @@
     "**/.hg": true,
     "**/CVS": true,
     "**/.DS_Store": true,
-    "**/node_modules": true,
-    "**/npm-packages-offline-cache": true,
-    "**/dist": true
+    "REST/Develop/AccessControl/CognitoUserPool/client/node_modules": true
   },
   // JS/TS
   "eslint.lintTask.enable": true,
