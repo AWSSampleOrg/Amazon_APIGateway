@@ -309,37 +309,6 @@ Resources:
       UnhealthyThresholdCount: 2
 
   #-------------------------------------------------------
-  # CloudWatch Alarm
-  #-------------------------------------------------------
-  LambdaDurationAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      ActionsEnabled: true
-      AlarmActions:
-        - !Ref SNSTopic
-      AlarmDescription: !Sub This is the Duration alarm for ${TargetLambdaFunction}
-      AlarmName: !Sub ${TargetLambdaFunction}Duration
-      # CloudWatch Alarm would alert when it happens "EvaluationPeriods" times that the state of "ComparisonOperator" happens "Threshold" times in "Period" seconds.
-      ComparisonOperator: GreaterThanThreshold
-      Dimensions:
-        - Name: FunctionName
-          Value: !Ref TargetLambdaFunction
-      EvaluationPeriods: 1
-      MetricName: Duration
-      Namespace: AWS/Lambda
-      Period: 600
-      Statistic: Average
-      Threshold: 5
-
-  #-------------------------------------------------------
-  # SNS
-  #-------------------------------------------------------
-  SNSTopic:
-    Type: AWS::SNS::Topic
-    Properties:
-      TopicName: SNSTopic
-
-  #-------------------------------------------------------
   # CloudWatch LogGroup
   #-------------------------------------------------------
   APIGatewayExecutionLogGroup:
