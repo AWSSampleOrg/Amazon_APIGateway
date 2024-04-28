@@ -1,0 +1,242 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: API Gateway Sample
+Parameters:
+  # APIGateway
+  APIGatewayStageName:
+    Type: String
+    AllowedValues:
+      - test
+      - prod
+
+Resources:
+  #-------------------------------------------------------
+  # API Gateway
+  #-------------------------------------------------------
+  APIGatewayAccount:
+    Type: AWS::ApiGateway::Account
+    Properties:
+      CloudWatchRoleArn: !Sub ${APIGatewayRole.Arn}
+
+  APIGatewayRestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: api_gateway
+
+  APIGatewayResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref APIGatewayRestApi
+      ParentId: !GetAtt APIGatewayRestApi.RootResourceId
+      PathPart: lambda_handler
+
+  APIGatewayMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        # IntegrationResponses:
+        #   - StatusCode: 202
+        # PassthroughBehavior: WHEN_NO_TEMPLATES
+        # RequestParameters:
+        #   "integration.request.header.X-Amz-Invocation-Type": "'Event'"
+        # RequestTemplates:
+        #   "application/json": !Join
+        #     - ""
+        #     - - "#set($allParams = $input.params())\n{\n\"body-json\" : $input.json('$'),\n\"params\" : {\n#foreach($type in $allParams.keySet())\n #set($params = $allParams.get($type))\n\"$type\" : {\n #foreach($paramName in $params.keySet())\n \"$paramName\" : \"$util.escapeJavaScript($params.get($paramName))\"\n #if($foreach.hasNext),#end\n #end\n}\n "
+        #       - "#if($foreach.hasNext),#end\n#end\n},\n\"stage-variables\" : {\n#foreach($key in $stageVariables.keySet())\n\"$key\" : \"$util.escapeJavaScript($stageVariables.get($key))\"\n #if($foreach.hasNext),#end\n#end\n},\n"
+        #       - "\"context\" : {\n \"account-id\" : \"$context.identity.accountId\",\n \"api-id\" : \"$context.apiId\",\n \"api-key\" : \"$context.identity.apiKey\",\n \"authorizer-principal-id\" : \"$context.authorizer.principalId\",\n \"caller\" : \"$context.identity.caller\",\n \"cognito-authentication-provider\" : \"$context.identity.cognitoAuthenticationProvider\",\n \"cognito-authentication-type\" : \"$context.identity.cognitoAuthenticationType\",\n \"cognito-identity-id\" : \"$context.identity.cognitoIdentityId\",\n "
+        #       - "\"cognito-identity-pool-id\" : \"$context.identity.cognitoIdentityPoolId\",\n \"http-method\" : \"$context.httpMethod\",\n \"stage\" : \"$context.stage\",\n "
+        #       - "\"source-ip\" : \"$context.identity.sourceIp\",\n \"user\" : \"$context.identity.user\",\n \"user-agent\" : \"$context.identity.userAgent\",\n \"user-arn\" : \"$context.identity.userArn\",\n \"request-id\" : \"$context.requestId\",\n \"resource-id\" : \"$context.resourceId\",\n \"resource-path\" : \"$context.resourcePath\"\n }\n}"
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TargetLambdaFunction.Arn}/invocations
+      MethodResponses:
+        - StatusCode: 200
+      ResourceId: !Ref APIGatewayResource
+      RestApiId: !Ref APIGatewayRestApi
+
+  APIGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - APIGatewayMethod
+    Properties:
+      RestApiId: !Ref APIGatewayRestApi
+      StageName: !Sub ${APIGatewayStageName}
+      StageDescription:
+        # https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-mapping-template-reference.html#context-variable-reference?cmpid=docs_apigateway_console
+        AccessLogSetting:
+          DestinationArn: !Sub ${APIGatewayAccessLogGroup.Arn}
+          Format: '{ "requestId":"$context.requestId", "extendedRequestId":"$context.extendedRequestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod", "resourcePath":"$context.resourcePath", "status":"$context.status", "protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+        # CloudWatch Logs
+        DataTraceEnabled: true
+        LoggingLevel: INFO
+        MetricsEnabled: true
+        TracingEnabled: true
+
+  APIGatewayLambdaInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref TargetLambdaFunction
+      Principal: apigateway.amazonaws.com
+
+  #-------------------------------------------------------
+  # WAF
+  #-------------------------------------------------------
+  WAFv2WebACL:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: WAFv2WebACL
+      Scope: REGIONAL
+      DefaultAction:
+        Allow:
+          CustomRequestHandling:
+            InsertHeaders:
+              - Name: AllowActionHeader1Name
+                Value: AllowActionHeader1Value
+              - Name: AllowActionHeader2Name
+                Value: AllowActionHeader2Value
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: ExampleWebACLMetric
+      CustomResponseBodies:
+        CustomResponseBodyKey1:
+          ContentType: TEXT_PLAIN
+          Content: this is a plain text
+        CustomResponseBodyKey2:
+          ContentType: APPLICATION_JSON
+          Content: '{"jsonfieldname": "jsonfieldvalue"}'
+        CustomResponseBodyKey3:
+          ContentType: TEXT_HTML
+          Content: <html>HTML text content</html>
+      Rules:
+        - Name: RuleWithAWSManagedRules
+          Priority: 0
+          OverrideAction:
+            Count: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: RuleWithAWSManagedRulesMetric
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesCommonRuleSet
+              ExcludedRules: []
+        - Name: BlockXssAttack
+          Priority: 1
+          Action:
+            Block:
+              CustomResponse:
+                ResponseCode: 503
+                CustomResponseBodyKey: CustomResponseBodyKey1
+                ResponseHeaders:
+                  - Name: BlockActionHeader1Name
+                    Value: BlockActionHeader1Value
+                  - Name: BlockActionHeader2Name
+                    Value: BlockActionHeader2Value
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: BlockXssAttackMetric
+          Statement:
+            XssMatchStatement:
+              FieldToMatch:
+                AllQueryArguments: {}
+              TextTransformations:
+                - Priority: 1
+                  Type: NONE
+
+  WAFv2WebACLAssociation:
+    DependsOn:
+      - WAFv2WebACL
+      - APIGatewayRestApi
+      - APIGatewayDeployment
+    Type: AWS::WAFv2::WebACLAssociation
+    Properties:
+      WebACLArn: !GetAtt WAFv2WebACL.Arn
+      ResourceArn: !Sub arn:aws:apigateway:${AWS::Region}::/restapis/${APIGatewayRestApi}/stages/${APIGatewayStageName}
+
+  #-------------------------------------------------------
+  # CloudWatch LogGroup
+  #-------------------------------------------------------
+  APIGatewayExecutionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub API-Gateway-Execution-Logs_${APIGatewayRestApi}/${APIGatewayStageName}
+
+  APIGatewayAccessLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub API-Gateway-Access-Logs_${APIGatewayRestApi}/${APIGatewayStageName}
+
+  TargetLambdaFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${TargetLambdaFunction}
+
+  #-------------------------------------------------------
+  # Lambda
+  #-------------------------------------------------------
+  TargetLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Lambda/lambda_handler
+      FunctionName: lambda_handler
+      Handler: lambda_handler.lambda_handler
+      MemorySize: 128
+      Role: !Sub ${LambdaRole.Arn}
+      Runtime: python3.12
+      Timeout: 900
+      Tracing: Active
+      Environment:
+        Variables:
+          LOG_LEVEL: DEBUG
+
+  # ------------------------------------------------------------#
+  # IAM
+  # ------------------------------------------------------------#
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSLambda_FullAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Path: /
+      RoleName: LambdaRole
+
+  APIGatewayRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
+      Path: /
+      RoleName: APIGatewayRole
+
+Outputs:
+  APIGatewayRestApiId:
+    Description: APIGatewayRestApiId
+    Value: !Ref APIGatewayRestApi
+    Export:
+      Name: APIGatewayRestApiId
