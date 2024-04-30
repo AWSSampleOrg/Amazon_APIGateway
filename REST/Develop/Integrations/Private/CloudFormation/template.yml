@@ -69,7 +69,7 @@ Resources:
         IntegrationResponses:
           - StatusCode: 200
         PassthroughBehavior: WHEN_NO_MATCH
-        Uri: !Sub http://${NLB.DNSName}
+        Uri: !Sub http://${BackendNLB.DNSName}
       MethodResponses:
         - StatusCode: 200
       ResourceId: !Ref APIGatewayResource
@@ -98,7 +98,7 @@ Resources:
     Properties:
       Name: !Sub ${ProjectPrefix}VPCLink
       TargetArns:
-        - !Ref NLB
+        - !Ref BackendNLB
 
   #-------------------------------------------------------
   # CloudWatch LogGroup
@@ -280,46 +280,43 @@ Resources:
   # ------------------------------------------------------------#
   # NLB
   # ------------------------------------------------------------#
-  SecurityGroupForNLB:
+  SecurityGroupForBackendNLB:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupName: !Sub ${ProjectPrefix}SecurityGroupForNLB
-      GroupDescription: This is for SecurityGroupForNLB
+      GroupName: !Sub ${ProjectPrefix}SecurityGroupForBackendNLB
+      GroupDescription: This is for SecurityGroupForBackendNLB
       VpcId: !Ref VPC
       SecurityGroupIngress:
         - CidrIp: "0.0.0.0/0"
-          Description: This is for NLB
+          Description: This is for BackendNLB
           FromPort: 80
           IpProtocol: tcp
           ToPort: 80
       Tags:
         - Key: Name
-          Value: !Sub ${ProjectPrefix}SecurityGroupForNLB
-  #Listener
+          Value: !Sub ${ProjectPrefix}SecurityGroupForBackendNLB
   Listener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       DefaultActions:
-        - TargetGroupArn: !Ref TargetGroup
+        - TargetGroupArn: !Ref TargetGroupForBackendNLB
           Type: forward
-      LoadBalancerArn: !Ref NLB
+      LoadBalancerArn: !Ref BackendNLB
       Port: 80
       Protocol: TCP
-  #NLB
-  NLB:
+  BackendNLB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       IpAddressType: ipv4
       Name: !Sub ${ProjectPrefix}LoadBalancer
       Scheme: internal
       SecurityGroups:
-        - !Ref SecurityGroupForNLB
+        - !Ref SecurityGroupForBackendNLB
       Subnets:
         - !Ref PrivateSubnetA
         - !Ref PrivateSubnetC
       Type: network
-  #TargetGroup
-  TargetGroup:
+  TargetGroupForBackendNLB:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckEnabled: true
@@ -328,7 +325,7 @@ Resources:
       HealthCheckProtocol: TCP
       HealthCheckTimeoutSeconds: 30
       HealthyThresholdCount: 5
-      Name: !Sub ${ProjectPrefix}TargetGroup
+      Name: !Sub ${ProjectPrefix}TargetGroupForBackendNLB
       Port: 80
       Protocol: TCP
       TargetType: ip
