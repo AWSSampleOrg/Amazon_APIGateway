@@ -116,7 +116,7 @@ Resources:
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}
       Runtime: python3.12
-      Timeout: 900
+      Timeout: 29
       Tracing: Active
       Environment:
         Variables:
@@ -131,7 +131,7 @@ Resources:
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}
       Runtime: python3.12
-      Timeout: 900
+      Timeout: 29
       Tracing: Active
       Environment:
         Variables:
