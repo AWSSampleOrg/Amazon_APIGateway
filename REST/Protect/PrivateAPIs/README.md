@@ -1,46 +1,59 @@
 # How to call private API within/outside the VPC
 
-| Call site                                         | VPC endpoint Private DNS enabled | How to call private API |
-| ------------------------------------------------- | -------------------------------- | ----------------------- |
-| Within the same VPC                               | Enabled                          | 1                       |
-| Within the same VPC                               | Disabled                         | 2 or 3                  |
-| on premise connected to the VPC by Direct Connect | Enabled                          | 4                       |
-| on premise connected to the VPC by Direct Connect | Disabled                         | 2 or 3                  |
+| Call site                                         | VPC endpoint Private DNS enabled | VPC endpoint Associated with the API | How to call private API |
+| ------------------------------------------------- | -------------------------------- | ------------------------------------ | ----------------------- |
+| Within the same VPC                               | Enabled                          | Associated                           | 1, 2, 3                 |
+| Within the same VPC                               | Enabled                          | Disassociated                        | 1, 2                    |
+| Within the same VPC                               | Disabled                         | Associated                           | 2, 3                    |
+| Within the same VPC                               | Disabled                         | Disassociated                        | 2                       |
+| on premise connected to the VPC by Direct Connect | Enabled                          | Associated                           | 2, 3, 4                 |
+| on premise connected to the VPC by Direct Connect | Enabled                          | Disassociated                        | 2, 4                    |
+| on premise connected to the VPC by Direct Connect | Disabled                         | Associated                           | 2, 3                    |
+| on premise connected to the VPC by Direct Connect | Disabled                         | Disassociated                        | 2                       |
 
-## Enable private DNS
+## 1. Invoking your private API using private DNS names
 
-1. Invoking your private API using private DNS names
-   https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-private-api-test-invoke-url.html#w53aac15b9c29c27c11
+- Develop / Invoke / Invoking your private API using private DNS names
+  https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-private-api-test-invoke-url.html#w53aac15b9c29c27c11
 
 ```sh
 {restapi-id}.execute-api.{region}.amazonaws.com
 ```
 
-## Disable private DNS
+## 2. Invoking your private API using endpoint-specific public DNS hostnames
 
-2. Accessing your private API using a Route53 alias
-   https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-private-api-test-invoke-url.html#apigateway-private-api-route53-alias
+- Develop / Invoke / Invoking your private API using endpoint-specific public DNS hostnames
+  https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-private-api-test-invoke-url.html#apigateway-private-api-public-dns
 
-```sh
-https://{rest-api-id}-{vpce-id}.execute-api.{region}.amazonaws.com/{stage}
-```
-
-3. Invoking your private API using endpoint-specific public DNS hostnames
-   https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-private-api-test-invoke-url.html#apigateway-private-api-public-dns
-
-Add Host header
+Add **`Host`** header
 
 ```sh
 curl -v https://vpce-def-01234567.execute-api.us-west-2.vpce.amazonaws.com/test/pets -H 'Host: abc1234.execute-api.us-west-2.amazonaws.com'
 ```
 
-or with x-apigw-api-id
+or with **`x-apigw-api-id`**
 
 ```sh
 curl -v https://{public-dns-hostname}.execute-api.{region}.vpce.amazonaws.com/test -H'x-apigw-api-id:{api-id}'
 ```
 
-4. Use Route 53 Inbound endpoint
+## 3. Accessing your private API using a Route53 alias
+
+- Develop / Invoke / Accessing your private API using a Route53 alias
+  https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-private-api-test-invoke-url.html#apigateway-private-api-route53-alias
+- Protect / Private APIs / Associate or disassociate a VPC endpoint with a private REST API
+  https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-private-apis.html#associate-private-api-with-vpc-endpoint
+
+```sh
+https://{rest-api-id}-{vpce-id}.execute-api.{region}.amazonaws.com/{stage}
+```
+
+## 4. Use Route 53 Inbound endpoint
+
+- Develop / Invoke / Accessing your private API using AWS Direct Connect
+  https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-private-api-test-invoke-url.html#w53aac15b9c29c27c13
+- Route 53 Resolver / Forwarding inbound DNS queries to your VPCs
+  https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resolver-forwarding-inbound-queries.html
 
 # How to call both Private and Public APIs
 
@@ -56,11 +69,13 @@ curl -v https://{public-dns-hostname}.execute-api.{region}.vpce.amazonaws.com/te
 
 Custom domain is not available for private API.
 
-- https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-private-apis.html#apigateway-private-api-design-considerations
+- Protect / Private APIs / Private API development considerations
+  https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-private-apis.html#apigateway-private-api-design-considerations
   //=====
   Custom domain names are not supported for private APIs.
   =====//
 
 Placing ALB/NLB attached custom domain in public subnets in front of VPC endpoint for API Gateway, and set up custom domain with API mapping to the private API Gateway.
 
-- https://repost.aws/knowledge-center/invoke-private-api-gateway
+- How can I invoke an API Gateway private API using an Application or Network Load balancer?
+  https://repost.aws/knowledge-center/invoke-private-api-gateway
