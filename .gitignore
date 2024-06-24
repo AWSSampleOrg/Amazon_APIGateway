@@ -2,3 +2,5 @@
 REST/Develop/AccessControl/CognitoUserPool/client/build
 REST/Develop/AccessControl/CognitoUserPool/client/.env
 /**/packaged_template.yml
+results.bin
+target.config

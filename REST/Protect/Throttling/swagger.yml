@@ -1,0 +1,31 @@
+openapi: 3.0.1
+info:
+  title: api_gateway
+  version: "2020-08-29"
+paths:
+  /mock_test:
+    get:
+      responses:
+        "200":
+          description: "200 response"
+          content: {}
+      x-amazon-apigateway-integration:
+        type: "mock"
+        responses:
+          default:
+            statusCode: "200"
+            responseTemplates:
+              application/json: |-
+                {
+                  "Method" : "GET",
+                  "name" : "Hello world",
+                  "age" : 100
+                }
+        requestTemplates:
+          application/json: |-
+            {
+              "statusCode" : 200,
+              "message" : "Get test"
+            }
+        passthroughBehavior: when_no_templates
+components: {}
