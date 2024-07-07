@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 S3_BUCKET="your-bucket-name"
-STACK_NAME="APIGateway-with-IAMAuth"
+STACK_NAME="APIGateway-Usage-Plan"
 
 SOURCE_DIR=$(cd $(dirname ${BASH_SOURCE:-$0}) && pwd)
 cd ${SOURCE_DIR}
