@@ -1,0 +1,241 @@
+openapi: 3.0.1
+info:
+  title: API Gateway to S3
+  description: API Gateway to S3
+  version: 1.0.0
+paths:
+  /{item}:
+    get:
+      parameters:
+        - name: item
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            content-type:
+              schema:
+                type: string
+            Content-Type:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Empty"
+        "400":
+          description: 400 response
+          content: {}
+        "500":
+          description: 500 response
+          content: {}
+      x-amazon-apigateway-integration:
+        credentials: { "Fn::GetAtt": APIGatewayRole.Arn }
+        httpMethod: GET
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:s3:path/${S3Bucket}/{object}
+        responses:
+          4\d{2}:
+            statusCode: "400"
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.content-type: integration.response.header.content-type
+              method.response.header.Content-Type: integration.response.header.Content-Type
+          5\d{2}:
+            statusCode: "500"
+        requestParameters:
+          integration.request.path.object: method.request.path.item
+        passthroughBehavior: when_no_match
+        type: aws
+    put:
+      parameters:
+        - name: Content-Type
+          in: header
+          schema:
+            type: string
+        - name: item
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Content-Length:
+              schema:
+                type: string
+            Content-Type:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Empty"
+        "400":
+          description: 400 response
+          content: {}
+        "500":
+          description: 500 response
+          content: {}
+      x-amazon-apigateway-integration:
+        credentials: { "Fn::GetAtt": APIGatewayRole.Arn }
+        httpMethod: PUT
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:s3:path/${S3Bucket}/{object}
+        responses:
+          4\d{2}:
+            statusCode: "400"
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Content-Type: integration.response.header.Content-Type
+              method.response.header.Content-Length: integration.response.header.Content-Length
+          5\d{2}:
+            statusCode: "500"
+        requestParameters:
+          integration.request.path.object: method.request.path.item
+          integration.request.header.Content-Type: method.request.header.Content-Type
+        passthroughBehavior: when_no_match
+        type: aws
+    delete:
+      parameters:
+        - name: item
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Content-Length:
+              schema:
+                type: string
+            Content-Type:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Empty"
+        "400":
+          description: 400 response
+          content: {}
+        "500":
+          description: 500 response
+          content: {}
+      x-amazon-apigateway-integration:
+        credentials: { "Fn::GetAtt": APIGatewayRole.Arn }
+        httpMethod: DELETE
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:s3:path/${S3Bucket}/{object}
+        responses:
+          4\d{2}:
+            statusCode: "400"
+          default:
+            statusCode: "200"
+          5\d{2}:
+            statusCode: "500"
+        requestParameters:
+          integration.request.path.object: method.request.path.item
+        passthroughBehavior: when_no_match
+        type: aws
+    head:
+      parameters:
+        - name: item
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Content-Length:
+              schema:
+                type: string
+            Content-Type:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Empty"
+        "400":
+          description: 400 response
+          content: {}
+        "500":
+          description: 500 response
+          content: {}
+      x-amazon-apigateway-integration:
+        credentials: { "Fn::GetAtt": APIGatewayRole.Arn }
+        httpMethod: HEAD
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:s3:path/${S3Bucket}/{object}
+        responses:
+          4\d{2}:
+            statusCode: "400"
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Content-Type: integration.response.header.Content-Type
+              method.response.header.Content-Length: integration.response.header.Content-Length
+          5\d{2}:
+            statusCode: "500"
+        requestParameters:
+          integration.request.path.object: method.request.path.item
+        passthroughBehavior: when_no_match
+        type: aws
+  /:
+    get:
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Content-Length:
+              schema:
+                type: string
+            Timestamp:
+              schema:
+                type: string
+            Content-Type:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Empty"
+        "400":
+          description: 400 response
+          content: {}
+        "500":
+          description: 500 response
+          content: {}
+      x-amazon-apigateway-integration:
+        credentials: { "Fn::GetAtt": APIGatewayRole.Arn }
+        httpMethod: GET
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:s3:path//
+        responses:
+          4\d{2}:
+            statusCode: "400"
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Content-Type: integration.response.header.Content-Type
+              method.response.header.Content-Length: integration.response.header.Content-Length
+              method.response.header.Timestamp: integration.response.header.Date
+          5\d{2}:
+            statusCode: "500"
+        passthroughBehavior: when_no_match
+        type: aws
+components:
+  schemas:
+    Empty:
+      title: Empty Schema
+      type: object
