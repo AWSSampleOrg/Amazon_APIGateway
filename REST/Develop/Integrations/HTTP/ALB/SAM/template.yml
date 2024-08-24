@@ -8,7 +8,6 @@ Parameters:
       - test
       - prod
 
-  # Project Name Parameter
   ProjectPrefix:
     Type: String
     Default: ""

@@ -1,15 +1,10 @@
 #!/usr/bin/env bash
-STACK_NAME="APIGateway-VPCLink"
+STACK_NAME="VPC"
 
 SOURCE_DIR=$(cd $(dirname ${BASH_SOURCE:-$0}) && pwd)
 cd ${SOURCE_DIR}
 
 aws cloudformation deploy \
-    --template-file template.yml \
+    --template-file vpc.yml \
     --stack-name ${STACK_NAME} \
-    --parameter-overrides \
-    APIGatewayStageName=test \
-    VpcId="" \
-    PrivateSubnetAId="" \
-    PrivateSubnetCId="" \
     --capabilities CAPABILITY_NAMED_IAM
