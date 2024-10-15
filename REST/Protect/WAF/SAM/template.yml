@@ -2,7 +2,10 @@ AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: API Gateway Sample
 Parameters:
-  # APIGateway
+  ProjectPrefix:
+    Type: String
+    Default: ""
+
   APIGatewayStageName:
     Type: String
     AllowedValues:
@@ -30,7 +33,7 @@ Resources:
       AccessLogSetting:
         DestinationArn: !Sub ${APIGatewayAccessLogGroup.Arn}
         Format: '{ "requestId":"$context.requestId", "extendedRequestId":"$context.extendedRequestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod", "resourcePath":"$context.resourcePath", "status":"$context.status", "protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
-      Name: api_gateway
+      Name: !Sub ${ProjectPrefix}rest_api
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
@@ -147,7 +150,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: Lambda/lambda_handler
-      FunctionName: lambda_handler
+      FunctionName: !Sub ${ProjectPrefix}lambda_handler
       Handler: lambda_handler.lambda_handler
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}
@@ -177,7 +180,7 @@ Resources:
         - arn:aws:iam::aws:policy/AWSLambda_FullAccess
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Path: /
-      RoleName: LambdaRole
+      RoleName: !Sub ${ProjectPrefix}LambdaRole
 
   APIGatewayRole:
     Type: AWS::IAM::Role
@@ -194,7 +197,7 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
       Path: /
-      RoleName: APIGatewayRole
+      RoleName: !Sub ${ProjectPrefix}APIGatewayRole
 
 Outputs:
   APIGatewayRestApiId:

@@ -2,6 +2,10 @@ AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: API Gateway Sample
 Parameters:
+  ProjectPrefix:
+    Type: String
+    Default: ""
+
   APIGatewayStageName:
     Type: String
     AllowedValues:
@@ -29,7 +33,7 @@ Resources:
       AccessLogSetting:
         DestinationArn: !Sub ${APIGatewayAccessLogGroup.Arn}
         Format: '{ "requestId":"$context.requestId", "extendedRequestId":"$context.extendedRequestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod", "resourcePath":"$context.resourcePath", "status":"$context.status", "protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
-      Name: api_gateway
+      Name: !Sub ${ProjectPrefix}rest_api
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
@@ -92,4 +96,4 @@ Resources:
         - arn:aws:iam::aws:policy/AmazonSQSFullAccess
         - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
       Path: /
-      RoleName: APIGatewayRole
+      RoleName: !Sub ${ProjectPrefix}APIGatewayRole

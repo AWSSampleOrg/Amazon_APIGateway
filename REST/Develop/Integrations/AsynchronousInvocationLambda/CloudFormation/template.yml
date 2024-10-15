@@ -2,7 +2,10 @@ AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: API Gateway Sample
 Parameters:
-  # APIGateway
+  ProjectPrefix:
+    Type: String
+    Default: ""
+
   APIGatewayStageName:
     Type: String
     AllowedValues:
@@ -21,7 +24,7 @@ Resources:
   APIGatewayRestApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: api_gateway
+      Name: !Sub ${ProjectPrefix}rest_api
 
   APIGatewayResource:
     Type: AWS::ApiGateway::Resource
@@ -146,7 +149,7 @@ Resources:
       DeadLetterQueue:
         TargetArn: !GetAtt SQS.Arn
         Type: SQS
-      FunctionName: lambda_handler_lambda
+      FunctionName: !Sub ${ProjectPrefix}lambda_handler_lambda
       Handler: lambda_handler.lambda_handler
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}
@@ -189,7 +192,7 @@ Resources:
         - arn:aws:iam::aws:policy/AWSLambda_FullAccess
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Path: /
-      RoleName: LambdaRole
+      RoleName: !Sub ${ProjectPrefix}LambdaRole
 
   APIGatewayRole:
     Type: AWS::IAM::Role
@@ -206,4 +209,4 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
       Path: /
-      RoleName: APIGatewayRole
+      RoleName: !Sub ${ProjectPrefix}APIGatewayRole

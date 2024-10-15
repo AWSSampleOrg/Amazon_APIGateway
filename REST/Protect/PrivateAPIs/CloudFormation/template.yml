@@ -6,7 +6,6 @@ Parameters:
     Type: String
     Default: ""
 
-  # APIGateway
   APIGatewayStageName:
     Type: String
     AllowedValues:
@@ -32,7 +31,7 @@ Resources:
   APIGatewayRestApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: api_gateway
+      Name: !Sub ${ProjectPrefix}rest_api
       EndpointConfiguration:
         Types:
           - PRIVATE
@@ -121,7 +120,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: Lambda/lambda_handler
-      FunctionName: lambda_handler
+      FunctionName: !Sub ${ProjectPrefix}lambda_handler
       Handler: lambda_handler.lambda_handler
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}

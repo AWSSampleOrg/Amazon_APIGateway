@@ -2,6 +2,10 @@ AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: API Gateway Sample
 Parameters:
+  ProjectPrefix:
+    Type: String
+    Default: ""
+
   APIGatewayStageName:
     Type: String
     AllowedValues:
@@ -20,7 +24,7 @@ Resources:
   APIGatewayRestApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: api_gateway
+      Name: !Sub ${ProjectPrefix}rest_api
 
   APIGatewayResource:
     Type: AWS::ApiGateway::Resource
@@ -144,4 +148,4 @@ Resources:
         - arn:aws:iam::aws:policy/AmazonSQSFullAccess
         - arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs
       Path: /
-      RoleName: APIGatewayRole
+      RoleName: !Sub ${ProjectPrefix}APIGatewayRole

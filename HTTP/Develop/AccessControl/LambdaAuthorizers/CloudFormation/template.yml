@@ -2,7 +2,10 @@ AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: API Gateway Sample
 Parameters:
-  # APIGateway
+  ProjectPrefix:
+    Type: String
+    Default: ""
+
   APIGatewayStageName:
     Type: String
     AllowedValues:
@@ -16,7 +19,7 @@ Resources:
   APIGatewayHttpApi:
     Type: AWS::ApiGatewayV2::Api
     Properties:
-      Name: http_api
+      Name: !Sub ${ProjectPrefix}http_api
       ProtocolType: HTTP
 
   APIGatewayHttpApiLambdaProxy:
@@ -137,7 +140,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: Lambda/lambda_handler
-      FunctionName: lambda_handler
+      FunctionName: !Sub ${ProjectPrefix}lambda_handler
       Handler: lambda_handler.lambda_handler
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}
@@ -167,7 +170,7 @@ Resources:
         - arn:aws:iam::aws:policy/AWSLambda_FullAccess
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
       Path: /
-      RoleName: LambdaRole
+      RoleName: !Sub ${ProjectPrefix}LambdaRole
 
   APIGatewayRole:
     Type: AWS::IAM::Role
@@ -190,7 +193,7 @@ Resources:
               - Effect: Allow
                 Action: lambda:InvokeFunction
                 Resource: !Sub ${LambdaAuthorizer.Arn}
-      RoleName: APIGatewayRole
+      RoleName: !Sub ${ProjectPrefix}APIGatewayRole
 
 Outputs:
   APIGatewayHttpApiEndpoint:
