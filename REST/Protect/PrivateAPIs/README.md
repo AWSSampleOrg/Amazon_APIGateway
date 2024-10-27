@@ -1,15 +1,19 @@
 # How to call private API within/outside the VPC
 
-| Call site                                         | VPC endpoint Private DNS enabled | VPC endpoint Associated with the API | How to call private API |
-| ------------------------------------------------- | -------------------------------- | ------------------------------------ | ----------------------- |
-| Within the same VPC                               | Enabled                          | Associated                           | 1, 2, 3                 |
-| Within the same VPC                               | Enabled                          | Disassociated                        | 1, 2                    |
-| Within the same VPC                               | Disabled                         | Associated                           | 2, 3                    |
-| Within the same VPC                               | Disabled                         | Disassociated                        | 2                       |
-| on premise connected to the VPC by Direct Connect | Enabled                          | Associated                           | 2, 3, 4                 |
-| on premise connected to the VPC by Direct Connect | Enabled                          | Disassociated                        | 2, 4                    |
-| on premise connected to the VPC by Direct Connect | Disabled                         | Associated                           | 2, 3                    |
-| on premise connected to the VPC by Direct Connect | Disabled                         | Disassociated                        | 2                       |
+| Call site                                                   | VPC endpoint Private DNS enabled | VPC endpoint Associated with the API | How to call private API |
+| ----------------------------------------------------------- | -------------------------------- | ------------------------------------ | ----------------------- |
+| Within the same VPC                                         | Enabled                          | Associated                           | 1, 2, 3                 |
+| Within the same VPC                                         | Enabled                          | Disassociated                        | 1, 2                    |
+| Within the same VPC                                         | Disabled                         | Associated                           | 2, 3                    |
+| Within the same VPC                                         | Disabled                         | Disassociated                        | 2                       |
+| DX/VPN                                                      | Enabled                          | Associated                           | 2, 3, 4                 |
+| DX/VPN                                                      | Enabled                          | Disassociated                        | 2, 4                    |
+| DX/VPN                                                      | Disabled                         | Associated                           | 2, 3                    |
+| DX/VPN                                                      | Disabled                         | Disassociated                        | 2                       |
+| Cross account (make sure to allow those in resource policy) | Enabled                          | Associated                           | 1, 2, 3                 |
+| Cross account (make sure to allow those in resource policy) | Enabled                          | Disassociated                        | 1, 2                    |
+| Cross account (make sure to allow those in resource policy) | Disabled                         | Associated                           | 2, 3                    |
+| Cross account (make sure to allow those in resource policy) | Disabled                         | Disassociated                        | 2                       |
 
 ## 1. Invoking your private API using private DNS names
 
@@ -79,3 +83,7 @@ Placing ALB/NLB attached custom domain in public subnets in front of VPC endpoin
 
 - How can I invoke an API Gateway private API using an Application or Network Load balancer?
   https://repost.aws/knowledge-center/invoke-private-api-gateway
+
+# How to call from another AWS account
+
+https://repost.aws/knowledge-center/api-gateway-private-cross-account-vpce
