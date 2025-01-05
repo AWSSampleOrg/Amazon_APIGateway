@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 S3_BUCKET="your-bucket-name"
-STACK_NAME="APIGateway-to-LambdaProxy"
+STACK_NAME="APIGateway-with-LambdaAuthorizer-Basic-Auth"
 
 SOURCE_DIR=$(cd $(dirname ${BASH_SOURCE:-$0}) && pwd)
 cd ${SOURCE_DIR}

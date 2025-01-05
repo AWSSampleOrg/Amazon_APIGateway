@@ -125,6 +125,21 @@ Resources:
       StageName: !Sub ${APIGatewayStageName}
       DeploymentId: !Ref Deployment
       ApiId: !Ref WebSocketApi
+      AccessLogSettings:
+        DestinationArn: !GetAtt APIGatewayAccessLogGroup.Arn
+        Format: >-
+          { "accountId": "$context.accountId",
+          "apiId": "$context.apiId",
+          "awsEndpointRequestId": "$context.awsEndpointRequestId",
+          "httpMethod":"$context.httpMethod",
+          "requestId":"$context.requestId",
+          "requestTime":"$context.requestTime",
+          "requestTimeEpoch":"$context.requestTimeEpoch",
+          "responseLatency":"$context.responseLatency",
+          "responseLength":"$context.responseLength",
+          "routeKey":"$context.routeKey",
+          "stage":"$context.stage",
+          "status": "$context.status" }
 
   ConnectFunctionInvokePermission:
     Type: AWS::Lambda::Permission
@@ -160,12 +175,12 @@ Resources:
   APIGatewayExecutionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub API-Gateway-Execution-Logs_${APIGatewayRestApi}/${APIGatewayStageName}
+      LogGroupName: !Sub API-Gateway-Execution-Logs_${WebSocketApi}/${APIGatewayStageName}
 
   APIGatewayAccessLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub API-Gateway-Access-Logs_${APIGatewayRestApi}/${APIGatewayStageName}
+      LogGroupName: !Sub API-Gateway-Access-Logs_${WebSocketApi}/${APIGatewayStageName}
 
   ConnectFunctionLogLogGroup:
     Type: AWS::Logs::LogGroup
@@ -198,7 +213,7 @@ Resources:
       Handler: lambda_handler.lambda_handler
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}
-      Runtime: python3.12
+      Runtime: python3.13
       Timeout: 29
       Tracing: Active
       Environment:
@@ -213,7 +228,7 @@ Resources:
       Handler: lambda_handler.lambda_handler
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}
-      Runtime: python3.12
+      Runtime: python3.13
       Timeout: 29
       Tracing: Active
       Environment:
@@ -228,7 +243,7 @@ Resources:
       Handler: lambda_handler.lambda_handler
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}
-      Runtime: python3.12
+      Runtime: python3.13
       Timeout: 29
       Tracing: Active
       Environment:
@@ -243,7 +258,7 @@ Resources:
       Handler: lambda_handler.lambda_handler
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}
-      Runtime: python3.12
+      Runtime: python3.13
       Timeout: 29
       Tracing: Active
       Environment:

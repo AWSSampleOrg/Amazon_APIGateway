@@ -14,5 +14,6 @@ aws cloudformation deploy \
     --template-file packaged_template.yml \
     --stack-name ${STACK_NAME} \
     --parameter-overrides \
+    ProjectPrefix="" \
     APIGatewayStageName=test \
     --capabilities CAPABILITY_NAMED_IAM

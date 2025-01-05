@@ -125,11 +125,11 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: Lambda/authorizer
-      FunctionName: authorizer
+      FunctionName: !Sub ${ProjectPrefix}authorizer
       Handler: authorizer.lambda_handler
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}
-      Runtime: python3.12
+      Runtime: python3.13
       Timeout: 29
       Tracing: Active
       Environment:
@@ -144,7 +144,7 @@ Resources:
       Handler: lambda_handler.lambda_handler
       MemorySize: 128
       Role: !Sub ${LambdaRole.Arn}
-      Runtime: python3.12
+      Runtime: python3.13
       Timeout: 29
       Tracing: Active
       Environment:

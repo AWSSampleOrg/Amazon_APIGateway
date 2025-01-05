@@ -1,0 +1,39 @@
+openapi: 3.0.1
+info:
+  title: api_gateway
+  version: "2020-08-30"
+paths:
+  /lambda_handler:
+    get:
+      responses:
+        "200":
+          description: 200 response
+          content: {}
+      security:
+        - Authorizer: []
+      x-amazon-apigateway-integration:
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TargetLambdaFunction.Arn}/invocations
+        passthroughBehavior: when_no_match
+        httpMethod: POST
+        type: aws_proxy
+components:
+  securitySchemes:
+    Authorizer:
+      type: apiKey
+      name: Authorization
+      in: header
+      x-amazon-apigateway-authtype: custom
+      x-amazon-apigateway-authorizer:
+        authorizerUri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaAuthorizer.Arn}/invocations
+        authorizerResultTtlInSeconds: 0
+        type: request
+        identitySource: "method.request.header.Authorization"
+x-amazon-apigateway-gateway-responses:
+  UNAUTHORIZED:
+    statusCode: 401
+    responseParameters:
+      gatewayresponse.header.WWW-Authenticate: "'Basic'"
+    responseTemplates:
+      application/json: '{"message": $context.error.messageString }'
